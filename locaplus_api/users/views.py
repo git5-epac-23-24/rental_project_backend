@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 from django.contrib.auth.models import Group
-from users.models import User
+from users.models import User, Customer
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -19,11 +19,13 @@ class UserViewSet(viewsets.ModelViewSet):
     
     
 @api_view(['POST'])
-def register(request):
+def register_customer(request):
     data = request.data
     try:
         user = User.objects.create_user(
             data['username'], data['email'], data['password'])
+        # customer = Customer.objects.create(
+        #     user=user)
         return Response({'status': 'success', 'message': 'User created successfully'})
     except:
         return Response({'status': 'error', 'message': 'Something went wrong'})
