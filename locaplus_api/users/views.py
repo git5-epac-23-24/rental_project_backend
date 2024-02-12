@@ -6,7 +6,7 @@ from rest_framework import permissions, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from users.serializers import UserSerializer, CustomerSerializer, OwnerSerializer, UserCreationTestSerializer
+from users.serializers import UserSerializer, CustomerSerializer, OwnerSerializer, UserCreationTestSerializer, UserCreationSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from users.models import User, Customer
@@ -48,8 +48,16 @@ def register_customer(request):
     data = request.data
     serializer = UserCreationTestSerializer(data=data)
     if serializer.is_valid():
-        user = serializer.save
-        customer = Customer.objects.create(user=user)
+        # serializer.save
+        data = serializer.data
+        user = User.objects.create_user(**data)
+        # user = User.objects.create_user(
+        #     username=data["username"],
+        #     email=data["email"],
+        #     password=data["password"]
+        # )
+        customer = Customer(user=user)
+        customer.save()
         return Response({
             "status": "success",
             "message": "Customer created successfully"

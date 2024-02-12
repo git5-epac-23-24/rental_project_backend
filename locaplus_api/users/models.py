@@ -13,6 +13,7 @@ class User(AbstractUser):
     address = models.CharField(max_length=50)
     city = models.CharField(max_length=50)
     country = models.CharField(max_length=50)
+    # password 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -24,7 +25,7 @@ class Customer(models.Model):
         db_table = 'customers'
 
     def __str__(self):
-        return self.user.username
+        return self.user.username   
     
     
     

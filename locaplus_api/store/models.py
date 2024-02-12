@@ -23,7 +23,7 @@ class ProductType(models.Model):
 class Product(models.Model):
     owner = models.ForeignKey(Owner, on_delete=models.CASCADE, related_name="products")
     name = models.CharField(max_length=50)
-    location = models.CharField()
+    location = models.CharField(max_length=500)
     availability = models.BooleanField()
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -43,7 +43,7 @@ class Product(models.Model):
 
 
 
-class Rent(models.model):
+class Rent(models.Model):
     customer = models.ForeignKey(
         Customer, on_delete=models.CASCADE, related_name="rents"
     )

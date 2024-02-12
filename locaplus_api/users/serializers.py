@@ -76,6 +76,10 @@ class UserCreationTestSerializer(serializers.ModelSerializer):
         instance.set_password(validated_data.get("password", instance.password))
         instance.save()
         return instance    
+    
+    
+    
+
 
 
 
