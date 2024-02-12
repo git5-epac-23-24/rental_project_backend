@@ -5,10 +5,10 @@ from .models import Customer, Owner, User
 # Register your models here.
 
 
-class CustomerInline(admin.StackedInline):
-    model = Customer
+class UserInline(admin.StackedInline):
+    model = User
     can_delete = False
-    verbose_name_plural = "customers"
+    verbose_name_plural = "users"
     
     
 class OwnerInline(admin.StackedInline):
@@ -16,7 +16,7 @@ class OwnerInline(admin.StackedInline):
     can_delete = False
     verbose_name_plural = "owners"
 class UserAdmin(BaseUserAdmin):
-    inlines = [CustomerInline, OwnerInline]
+    inlines = [OwnerInline]
     
     
 # admin.site.unregister(User)
