@@ -6,11 +6,15 @@ from rest_framework import permissions, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from users.serializers import UserSerializer, CustomerSerializer, OwnerSerializer, UserCreationTestSerializer, UserCreationSerializer
+from users.serializers import UserSerializer, CustomerSerializer, OwnerSerializer, UserCreationTestSerializer, UserCreationSerializer, UserLoginSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from users.models import User, Customer
 from users.serializers import CustomerSerializer
+
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
+
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -46,16 +50,12 @@ class OwnerViewSet(viewsets.ModelViewSet):
 @api_view(["POST"])
 def register_customer(request):
     data = request.data
-    serializer = UserCreationTestSerializer(data=data)
+    # serializer = UserCreationSerializer(data=data)
+    serializer = UserSerializer(data=data)
     if serializer.is_valid():
         # serializer.save
         data = serializer.data
         user = User.objects.create_user(**data)
-        # user = User.objects.create_user(
-        #     username=data["username"],
-        #     email=data["email"],
-        #     password=data["password"]
-        # )
         customer = Customer(user=user)
         customer.save()
         return Response({
@@ -67,19 +67,43 @@ def register_customer(request):
             "status": "error",
             "message": "Something went wrong"
         })
-    # try:
-    #     user = User.objects.create_user(
-    #         username=data["username"],
-    #         email=data["email"],
-    #         password=data["password"]
-    #     )
-    #     customer = Customer.objects.create(user=user)
-    #     return Response({
-    #         "status": "success",
-    #         "message": "Customer created successfully"
-    #     })
-    # except:
-    #     return Response({
-    #         "status": "error",
-    #         "message": "Something went wrong"
-    #     })
+    
+    
+    
+def get_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }    
+
+    
+@api_view(["POST"])
+def login_user(request):
+    data = request.data
+    # serializer = UserCreationSerializer(data=data)
+    serializer = UserLoginSerializer(data=data)
+    if serializer.is_valid():
+        # serializer.save
+        data = serializer.data
+        user = authenticate(username=data['username'], password=data['password'])
+        if user is not None:
+            tokens = get_tokens_for_user(user)
+            return Response({
+                "status": "success",
+                "message": "Customer logged in successfully",
+                "tokens": tokens
+            })
+        else:
+            return Response({
+                "status": "error",
+                "message": "Invalid credentials"
+            })
+ 
+    
+    
+@api_view(["POST"])
+def logout_user(request):
+    token = RefreshToken(request.data['token'])
+    token.blacklist()
