@@ -6,7 +6,7 @@ from rest_framework import permissions, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from users.serializers import UserSerializer, CustomerSerializer, OwnerSerializer, UserCreationTestSerializer, UserCreationSerializer, UserLoginSerializer
+from users.serializers import UserSerializer, CustomerSerializer, OwnerSerializer, UserCreationTestSerializer, UserCreationSerializer, UserLoginSerializer, UserUpdateSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from users.models import User, Customer
@@ -25,6 +25,13 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by("-date_joined")
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = UserUpdateSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
@@ -51,7 +58,7 @@ class OwnerViewSet(viewsets.ModelViewSet):
 def register_customer(request):
     data = request.data
     # serializer = UserCreationSerializer(data=data)
-    serializer = UserSerializer(data=data)
+    serializer = UserSerializer(data=data, partial=True)
     if serializer.is_valid():
         # serializer.save
         data = serializer.data
@@ -82,8 +89,8 @@ def get_tokens_for_user(user):
 @api_view(["POST"])
 def login_user(request):
     data = request.data
-    # serializer = UserCreationSerializer(data=data)
-    serializer = UserLoginSerializer(data=data)
+    serializer = UserSerializer(data=data, partial=True)
+    # serializer = UserLoginSerializer(data=data)
     if serializer.is_valid():
         # serializer.save
         data = serializer.data
@@ -100,6 +107,12 @@ def login_user(request):
                 "status": "error",
                 "message": "Invalid credentials"
             })
+    else:
+        return Response({
+            "status": "error",
+            "message": "Something went wrong",
+            "errors": serializer.errors
+        })
  
     
     
