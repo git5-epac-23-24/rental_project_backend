@@ -13,6 +13,7 @@ class User(AbstractUser):
     address = models.CharField(max_length=50)
     city = models.CharField(max_length=50)
     country = models.CharField(max_length=50)
+    id_card = models.ImageField(upload_to='users/owners/id_card/%Y/%m/%d/', blank=True, null=True)
     # password 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -43,3 +44,12 @@ class Owner(models.Model):
 
     def __str__(self):
         return self.user.username
+    
+
+class Role(models.Model):
+    users = models.ManyToManyField(User)
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+
+    def __str__(self) :
+        return self.name

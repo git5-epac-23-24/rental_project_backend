@@ -23,10 +23,9 @@ class ProductType(models.Model):
 
 
 class Product(models.Model):
-    owner = models.ForeignKey(Owner, on_delete=models.CASCADE, related_name="products")
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="products")
     name = models.CharField(max_length=50)
     location = models.CharField(max_length=500)
-    availability = models.BooleanField()
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.IntegerField()
@@ -61,6 +60,7 @@ class Rent(models.Model):
     end_date = models.DateTimeField()
     duration = models.DurationField()
     cost = models.FloatField()
+    status = models.BooleanField(default= False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -68,7 +68,7 @@ class Rent(models.Model):
         db_table = "rents"
 
     def __str__(self):
-        return self.user.username
+        return self.user.username + " a loué le produit : "+self.product.name
 
 
 

@@ -1,7 +1,7 @@
 from django.contrib.auth.models import Group
 from users.models import User, Customer, Owner
 from rest_framework import serializers
-
+from rest_framework.validators import UniqueValidator
 
 
 
@@ -12,8 +12,8 @@ class UserLoginSerializer(serializers.Serializer):
     
     class Meta:
         fields = [
-            "username",
             "password",
+            "username"
         ]
 
 
@@ -24,6 +24,11 @@ class UserSerializer(serializers.ModelSerializer):
     #     many=True, queryset=Group.objects.all(), required=False
     # )
     id = serializers.IntegerField(read_only=True)
+    email = serializers.EmailField(
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all())]
+        )
+    
     class Meta:
         model = User
         fields = [
@@ -86,6 +91,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 
 class UserCreationSerializer(serializers.ModelSerializer):
+    profil_picture = serializers.ImageField(required=True)
     class Meta:
         model = User
         fields = [
@@ -97,6 +103,7 @@ class UserCreationSerializer(serializers.ModelSerializer):
             "city",
             "country",
             "password",
+            "profil_picture"
         ]
         extra_kwargs = {
             "password": {"write_only": True},
@@ -189,14 +196,41 @@ class CustomerSerializer(serializers.ModelSerializer):
         model = Customer
         fields = ["id", "user"]
 
+class FileListSerializer ( serializers.Serializer ) :
+    image = serializers.ListField(
+                       child=serializers.FileField( max_length=100000,
+                                         allow_empty_file=False,
+                                         use_url=False )
+                                )
 
-class OwnerSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
-
+class OwnerCreationSerializer(serializers.ModelSerializer):
+    files = serializers.ListField(child=serializers.FileField())
     class Meta:
-        model = Owner
-        fields = ["id", "user", "address", "created_at", "updated_at"]
+        model = User
+        fields = [
+            "username",
+            "first_name",
+            "last_name",
+            "id_card",
+            "profil_picture",
+            "email",
+            "phone",
+            "city",
+            "country",
+            "files",
+            "password"
+        ]
 
+class OwnerGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
+        
+class OwnerUpgradeSerializer(serializers.ModelSerializer):
+    id_card = serializers.ImageField(required=True)
+    class Meta:
+        model = User
+        fields = ['id_card']  
 
 # class GroupSerializer(serializers.ModelSerializer):
 #     class Meta:
