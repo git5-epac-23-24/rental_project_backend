@@ -15,7 +15,6 @@ class User(AbstractUser):
     address = models.CharField(max_length=50)
     city = models.CharField(max_length=50)
     country = models.CharField(max_length=50)
-    id_card = models.ImageField(upload_to='users/owners/id_card/%Y/%m/%d/', blank=True, null=True)
     # password 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
