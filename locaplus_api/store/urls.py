@@ -18,4 +18,5 @@ urlpatterns = [
     path("owner_products/<int:pk>/", views.ProductViewSet.as_view({"get": "list_for_owner"})),
     path("product_types/", views.ProductTypeViewSet.as_view({"get": "list", "post": "create"})),
     path("product_types/<int:pk>/", views.ProductTypeViewSet.as_view({"get": "retrieve", "post": "update", "delete": "destroy"})),
+    path("products/filter/", views.ProductViewSet.as_view({"post": "filter"})),
 ]
