@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from rest_framework import viewsets, permissions
-from store.serializers import RentedSerializers, CreateRentedSerializers, updateRentedSerializers, getRentedSerialisers
-from store.models import Rent, Product
+from store.serializers import RentedSerializers, CreateRentedSerializers, updateRentedSerializers, getRentedSerialisers, ProductSerializers, ProductTypeSerializers
+from store.models import Rent, Product, ProductType
+from users.models import User
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from datetime import datetime
@@ -119,6 +120,252 @@ class RentedViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({
                 "status": "error",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
+            
+            
+            
+            
+class ProductViewSet(viewsets.ModelViewSet):
+    serializer_class = ProductSerializers
+    
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action == 'create':
+            permission_classes = [permissions.IsAuthenticated]
+        else:
+            permission_classes = [permissions.IsAdminUser]
+        return [permission() for permission in permission_classes]
+    
+    def get_queryset(self):
+        return Product.objects.all().order_by('-created_at')
+    
+    def create(self, request):
+        try:
+            data = request.data
+            data['owner'] = request.user
+            serializer = ProductSerializers(data=data, partial=True)
+            if (serializer.is_valid()):
+                serializer.save()
+                return Response({
+                    "status": "success",
+                    "message": "Your product has been added successfully",
+                    "data": serializer.data
+                })
+            else:
+                return Response({
+                    "status": "error",
+                    "message": "Serialization fails",
+                    "error": serializer.errors
+                })
+        except Exception as e:
+            return Response({
+                "status": "errors",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
+            
+    def update(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            product = get_object_or_404(Product, pk=kwargs['pk'])
+            serializer = ProductSerializers(product, data=data, partial=True)
+            if (serializer.is_valid()):
+                serializer.save()
+                return Response({
+                    "status": "success",
+                    "message": "Your product has been updated successfully",
+                    "data": serializer.data
+                })
+            else:
+                return Response({
+                    "status": "error",
+                    "message": "Serialization fails",
+                    "error": serializer.errors
+                })
+        except Exception as e:
+            return Response({
+                "status": "errors",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
+            
+    def destroy(self, request, *args, **kwargs):
+        try:
+            product = get_object_or_404(Product, pk=kwargs['pk'])
+            product.delete()
+            return Response({
+                "status": "success",
+                "message": "Your product has been deleted successfully",
+            })
+        except Exception as e:
+            return Response({
+                "status": "errors",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
+            
+    def list(self, request):
+        try:
+            products = Product.objects.all().order_by('-created_at')
+            serializer = ProductSerializers(products, many=True)
+            return Response({
+                "status": "success",
+                "message": "Products retrieved successfully",
+                "data": serializer.data
+            })
+        except Exception as e:
+            return Response({
+                "status": "errors",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
+            
+    def list_for_owner(self, request, *args, **kwargs):
+        try:
+            owner = get_object_or_404(User, pk=kwargs['pk'])
+            products = Product.objects.filter(owner=owner).order_by('-created_at')
+            serializer = ProductSerializers(products, many=True)
+            return Response({
+                "status": "success",
+                "message": "Products retrieved successfully",
+                "data": serializer.data
+            })
+        except Exception as e:
+            return Response({
+                "status": "errors",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
+            
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            product = get_object_or_404(Product, pk=kwargs['pk'])
+            serializer = ProductSerializers(product)
+            return Response({
+                "status": "success",
+                "message": "Product retrieved successfully",
+                "data": serializer.data
+            })
+        except Exception as e:
+            return Response({
+                "status": "errors",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
+            
+            
+class ProductTypeViewSet(viewsets.ModelViewSet):
+    serializer_class = ProductTypeSerializers
+    
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action == 'create':
+            permission_classes = [permissions.IsAuthenticated]
+        else:
+            permission_classes = [permissions.IsAdminUser]
+        return [permission() for permission in permission_classes]
+    
+    def get_queryset(self):
+        return ProductType.objects.all().order_by('-created_at')
+    
+    def create(self, request):
+        try:
+            data = request.data
+            serializer = ProductTypeSerializers(data=data)
+            if (serializer.is_valid()):
+                serializer.save()
+                return Response({
+                    "status": "success",
+                    "message": "Your product type has been added successfully",
+                    "data": serializer.data
+                })
+            else:
+                return Response({
+                    "status": "error",
+                    "message": "Serialization fails",
+                    "error": serializer.errors
+                })
+        except Exception as e:
+            return Response({
+                "status": "errors",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
+            
+    def update(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            productType = get_object_or_404(ProductType, pk=kwargs['pk'])
+            serializer = ProductTypeSerializers(productType, data=data, partial=True)
+            if (serializer.is_valid()):
+                serializer.save()
+                return Response({
+                    "status": "success",
+                    "message": "Your product type has been updated successfully",
+                    "data": serializer.data
+                })
+            else:
+                return Response({
+                    "status": "error",
+                    "message": "Serialization fails",
+                    "error": serializer.errors
+                })
+        except Exception as e:
+            return Response({
+                "status": "errors",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
+            
+    def destroy(self, request, *args, **kwargs):
+        try:
+            productType = get_object_or_404(ProductType, pk=kwargs['pk'])
+            productType.delete()
+            return Response({
+                "status": "success",
+                "message": "Your product type has been deleted successfully",
+            })
+        except Exception as e:
+            return Response({
+                "status": "errors",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
+            
+    def list(self, request):
+        try:
+            productTypes = ProductType.objects.all().order_by('-created_at')
+            serializer = ProductTypeSerializers(productTypes, many=True)
+            return Response({
+                "status": "success",
+                "message": "Product types retrieved successfully",
+                "data": serializer.data
+            })
+        except Exception as e:
+            return Response({
+                "status": "errors",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
+            
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            productType = get_object_or_404(ProductType, pk=kwargs['pk'])
+            serializer = ProductTypeSerializers(productType)
+            return Response({
+                "status": "success",
+                "message": "Product type retrieved successfully",
+                "data": serializer.data
+            })
+        except Exception as e:
+            return Response({
+                "status": "errors",
                 "message": "Something went wrong",
                 "error": str(e)
             })
