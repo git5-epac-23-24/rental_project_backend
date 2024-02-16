@@ -188,8 +188,8 @@ def register_customer(request):
             
             user = User.objects.create_user(**data)
             user.save()
-            user.role_set.add(Role.objects.get(name="CLIENT"))
-            customer_group = Group.objects.get(name="Customer")
+            user.role_set.add(Role.objects.get_or_create(name="CLIENT")[0])
+            customer_group = Group.objects.get_or_create(name="Customer")[0]
             user.groups.add(customer_group)
             send_user_serializer = UserSerializer(user)
             # customer = Customer(user=user)
@@ -253,7 +253,7 @@ def register_owner_complete(request):
                 user=user, id_card=data["id_card"] if "id_card" in data else None
             )
             owner.save()
-            owner_group = Group.objects.get(name="Owner")
+            owner_group = Group.objects.get_or_create(name="Owner")[0]
             user.groups.add(owner_group)
             # owner_data = {
             #     "id": owner.id,
@@ -297,7 +297,7 @@ def register_owner_partial(request):
     user = User.objects.get(id=user_id)
     owner = Owner(user=user, id_card=id_card)
     owner.save()
-    owner_group = Group.objects.get(name="Owner")
+    owner_group = Group.objects.get_or_create(name="Owner")[0]
     user.groups.add(owner_group)
     return Response({"status": "success", "message": "Owner created successfully"})
 
