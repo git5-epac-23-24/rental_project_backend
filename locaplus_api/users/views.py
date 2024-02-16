@@ -1,31 +1,23 @@
 from django.shortcuts import render
 
 from django.contrib.auth.models import Group
-<<<<<<< HEAD
-from users.models import User, Customer, Owner, Role
-=======
-from users.models import User, Owner
->>>>>>> haricrim
+from users.models import User, Owner, Role
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-<<<<<<< HEAD
-from users.serializers import UserSerializer, UserCreationSerializer, CustomerSerializer, OwnerGetSerializer, OwnerUpgradeSerializer, UserRetrieveSerializer, OwnerCreationSerializer, UserCreationTestSerializer, UserCreationSerializer, UserLoginSerializer, UserUpdateSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from users.models import User, Customer
-from users.serializers import CustomerSerializer
-=======
+from users.models import User
 from users.serializers import (
     UserSerializer,
     OwnerSerializer,
     UserLoginSerializer,
     UserUpdateSerializer,
+    UserCreationSerializer,
     UserTestSerializer,
 )
 
->>>>>>> haricrim
 
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -74,10 +66,9 @@ class UserViewSet(viewsets.ModelViewSet):
 #     API endpoint that allows customers to be viewed or edited.
 #     """
 
-<<<<<<< HEAD
-    queryset = User.objects.filter(role__name = "CLIENT")
-    serializer_class = UserRetrieveSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # queryset = User.objects.filter(role__name = "CLIENT")
+    # serializer_class = UserRetrieveSerializer
+    # permission_classes = [permissions.IsAuthenticated]
 
 
 # class OwnerViewSet(viewsets.ModelViewSet):
@@ -145,7 +136,6 @@ class UserViewSet(viewsets.ModelViewSet):
 #                 "message": "Something went wrong",
 #                 "error": str(e)
 #             })
-=======
 #     queryset = Customer.objects.all()
 #     serializer_class = CustomerSerializer
 #     permission_classes = [permissions.IsAuthenticated]
@@ -182,73 +172,54 @@ class OwnerViewSet(viewsets.ModelViewSet):
         self.perform_destroy(instance)
         return Response(status=204)
 
->>>>>>> haricrim
 
 @api_view(["POST"])
 def register_customer(request):
-    # try:
-    data = request.data
-    profile = data['profil_picture']
-    # serializer = UserCreationSerializer(data=data)
-    serializer = UserCreationSerializer(data=data, partial=True)
-    if serializer.is_valid():
-        # serializer.save
-        data = serializer.data
-<<<<<<< HEAD
-        data['profil_picture'] = profile
-        user = User.objects.create_user(**data)
-        user.role_set.add(Role.objects.get(name="CLIENT"))
-        # user.profil_picture = profile
-        # user.save()
-        # customer = Customer(user=user)
-        # customer.save()
-        return Response({
-            "status": "success",
-            "message": "Customer created successfully"
-        })
-    else:
-        return Response({
-            "status": "error",
-            "message": "Serialization failed",
-            "error": serializer.errors
-        })
-    # except Exception as e:
-    #     return Response({
-    #             "status": "errors",
-    #             "message": "Something went wrong",
-    #             "error": str(e)
-    #         })
+    try:
+        data = request.data
+        profile = data['profil_picture']
+        # serializer = UserCreationSerializer(data=data)
+        serializer = UserSerializer(data=data, partial=True)
+        if serializer.is_valid():
+            # serializer.save
+            data = serializer.data
+            # data['profil_picture'] = profile
+            user.role_set.add(Role.objects.get(name="CLIENT"))
         
-=======
-        if User.objects.filter(username=data["username"]).exists():
-            return Response({"status": "error", "message": "Username already exists"})
-        elif User.objects.filter(email=data["email"]).exists():
-            return Response({"status": "error", "message": "Email already exists"})
-        elif User.objects.filter(phone=data["phone"]).exists():
-            return Response({"status": "error", "message": "Phone already exists"})
+            if User.objects.filter(username=data["username"]).exists():
+                return Response({"status": "error", "message": "Username already exists"})
+            elif User.objects.filter(email=data["email"]).exists():
+                return Response({"status": "error", "message": "Email already exists"})
+            elif User.objects.filter(phone=data["phone"]).exists():
+                return Response({"status": "error", "message": "Phone already exists"})
+            else:
+                user = User.objects.create_user(**data)
+                user.save()
+                customer_group = Group.objects.get(name="Customer")
+                user.groups.add(customer_group)
+                send_user_serializer = UserSerializer(user)
+                # customer = Customer(user=user)
+                # customer.save()
+                return Response(
+                    {
+                        "status": "success",
+                        "message": "Customer created successfully",
+                        "user": send_user_serializer.data,
+                    }
+                )
         else:
-            user = User.objects.create_user(**data)
-            user.save()
-            customer_group = Group.objects.get(name="Customer")
-            user.groups.add(customer_group)
-            send_user_serializer = UserSerializer(user)
-            # customer = Customer(user=user)
-            # customer.save()
             return Response(
                 {
-                    "status": "success",
-                    "message": "Customer created successfully",
-                    "user": send_user_serializer.data,
-                }
-            )
-    else:
-        return Response(
-            {
-                "status": "error",
+                    "status": "error",
+                    "message": "Something went wrong",
+                    "errors": serializer.errors,
+                })
+    except Exception as e:
+        return Response({
+                "status": "errors",
                 "message": "Something went wrong",
-                "errors": serializer.errors,
-            }
-        )
+                "error": str(e)
+            })
 
 
 @api_view(["POST"])
@@ -336,7 +307,6 @@ def register_owner_partial(request):
     user.groups.add(owner_group)
     return Response({"status": "success", "message": "Owner created successfully"})
 
->>>>>>> haricrim
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -349,43 +319,6 @@ def get_tokens_for_user(user):
 
 @api_view(["POST"])
 def login_user(request):
-<<<<<<< HEAD
-    try:
-        data = request.data
-        serializer = UserLoginSerializer(data=data, partial=True)
-        # serializer = UserLoginSerializer(data=data)
-        if serializer.is_valid():
-            # serializer.save
-            data = serializer.data
-            user = authenticate(username=data['username'], password=data['password'])
-            print(data)
-            if user is not None:
-                tokens = get_tokens_for_user(user)
-                return Response({
-                    "status": "success",
-                    "message": "Customer logged in successfully",
-                    "tokens": tokens
-                })
-            else:
-                return Response({
-                    "status": "error",
-                    "message": "Invalid credentials"
-                })
-        else:
-            return Response({
-                "status": "error",
-                "message": "Something went wrong",
-                "errors": serializer.errors
-            })
-    except Exception as e:
-        return Response({
-            "status": "error",
-            "message": "Something went wrong",
-            "errors": str(e)
-        })
-    
-    
-=======
     data = request.data
     # serializer = UserSerializer(data=data, partial=True)
     serializer = UserLoginSerializer(data=data)
@@ -435,7 +368,6 @@ def login_user(request):
         )
 
 
->>>>>>> haricrim
 @api_view(["POST"])
 def logout_user(request):
     token = RefreshToken(request.data["token"])
