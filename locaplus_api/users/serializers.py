@@ -1,5 +1,5 @@
 from django.contrib.auth.models import Group
-from users.models import User, Owner
+from users.models import User, Owner, Subscribers
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
@@ -137,6 +137,15 @@ class UserSerializer(serializers.ModelSerializer):
 #         instance.save()
 #         return instance
         
+class SubscriberSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Subscribers
+        fields = '__all__' 
+        
+class MailSerializer(serializers.Serializer):
+    subject = serializers.CharField(required = True, max_length = 255)
+    message = serializers.CharField(required = True)
     
     
     

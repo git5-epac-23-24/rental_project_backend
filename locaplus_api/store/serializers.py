@@ -35,13 +35,13 @@ class updateRentedSerializers(serializers.Serializer):
         
 
     
-class ProductSerializers(serializers.Serializer):
+class ProductSerializers(serializers.ModelSerializer):
      id = serializers.IntegerField(read_only=True)
      owner = UserRetrieveSerializer(many=False, read_only=True)
      
      class Meta:
          model= Product
-         fields = ['__all__']
+         exclude = ('picture',)
          depth = 1
          
 class getRentedSerialisers(serializers.ModelSerializer):

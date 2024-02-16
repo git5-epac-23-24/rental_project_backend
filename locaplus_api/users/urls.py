@@ -7,6 +7,9 @@ from rest_framework import routers
 router = DefaultRouter()
 router.register(r"users", views.UserTestViewSet, basename="user")
 
+routerSimple = routers.SimpleRouter()
+routerSimple.register('subscribers', views.SubscriberViewSet, basename='subscriber')
+
 
 urlpatterns = [
     # path("api/", include(router.urls)),
@@ -19,4 +22,7 @@ urlpatterns = [
     path("customers/<int:pk>/", views.UserViewSet.as_view({"get": "retrieve","post": "update", "delete": "destroy"})),
     path("owners/", views.OwnerViewSet.as_view({"get": "list"})),
     path("owners/<int:pk>/", views.OwnerViewSet.as_view({"get": "retrieve","post": "update", "delete": "destroy"})),
+    path("<int:pk>/rented/", views.UserViewSet.as_view({'get': 'list_by_user'})),
+    path('', include(routerSimple.urls)),
+    path('subscribers/message', views.SubscriberViewSet.as_view({'post': 'send_mail'}))
 ]

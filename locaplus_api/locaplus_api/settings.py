@@ -179,6 +179,6 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
 }
 
-SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(minutes=120)}
+SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(hours=24)}
 
 APPEND_SLASH=False

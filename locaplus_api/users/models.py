@@ -46,3 +46,13 @@ class Role(models.Model):
 
     def __str__(self) :
         return self.name
+    
+    
+class Subscribers(models.Model):
+    email = models.EmailField("email address", unique=True, 
+        error_messages={
+            "unique": "A subscriber with that email already exists.",
+        },)
+    
+    def __str__(self) :
+        return self.email
