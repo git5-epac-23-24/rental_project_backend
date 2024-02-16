@@ -14,7 +14,8 @@ class RentedViewSet(viewsets.ModelViewSet):
     serializer_class = RentedSerializers
     
     serializer_action_classes = {
-        'list': getRentedSerialisers
+        'list': getRentedSerialisers,
+        'list_by_product': getRentedSerialisers
     }
     
     def get_serializer_class(self):
@@ -104,6 +105,17 @@ class RentedViewSet(viewsets.ModelViewSet):
                 "message": "Status updated successfully for the reservation",
                 "data": model_to_dict(rent)
             })
+        except Exception as e:
+            return Response({
+                "status": "error",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
+            
+    def list_by_product(self, request, *args, **kwargs):
+        try:
+            product = get_object_or_404(Product, pk=kwargs['pk'])
+            
         except Exception as e:
             return Response({
                 "status": "error",

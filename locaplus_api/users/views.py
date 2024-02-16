@@ -184,29 +184,23 @@ def register_customer(request):
             # serializer.save
             data = serializer.data
             # data['profil_picture'] = profile
-            user.role_set.add(Role.objects.get(name="CLIENT"))
         
-            if User.objects.filter(username=data["username"]).exists():
-                return Response({"status": "error", "message": "Username already exists"})
-            elif User.objects.filter(email=data["email"]).exists():
-                return Response({"status": "error", "message": "Email already exists"})
-            elif User.objects.filter(phone=data["phone"]).exists():
-                return Response({"status": "error", "message": "Phone already exists"})
-            else:
-                user = User.objects.create_user(**data)
-                user.save()
-                customer_group = Group.objects.get(name="Customer")
-                user.groups.add(customer_group)
-                send_user_serializer = UserSerializer(user)
-                # customer = Customer(user=user)
-                # customer.save()
-                return Response(
-                    {
-                        "status": "success",
-                        "message": "Customer created successfully",
-                        "user": send_user_serializer.data,
-                    }
-                )
+            
+            user = User.objects.create_user(**data)
+            user.save()
+            user.role_set.add(Role.objects.get(name="CLIENT"))
+            customer_group = Group.objects.get(name="Customer")
+            user.groups.add(customer_group)
+            send_user_serializer = UserSerializer(user)
+            # customer = Customer(user=user)
+            # customer.save()
+            return Response(
+                {
+                    "status": "success",
+                    "message": "Customer created successfully",
+                    "user": send_user_serializer.data,
+                }
+            )
         else:
             return Response(
                 {

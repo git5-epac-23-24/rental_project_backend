@@ -8,7 +8,9 @@ from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
     first_name = models.CharField(max_length=50, blank=True, null=True)
     last_name = models.CharField(max_length=50, blank=True, null=True)
-    phone = models.CharField(max_length=50)
+    phone = models.CharField(max_length=50, unique=True, error_messages={
+            "unique": "A user with that username already exists.",
+        },)
     profil_picture = models.ImageField(upload_to='users/profil_picture/%Y/%m/%d/', null=True)
     address = models.CharField(max_length=50)
     city = models.CharField(max_length=50)
@@ -37,7 +39,9 @@ class Owner(models.Model):
 
 class Role(models.Model):
     users = models.ManyToManyField(User)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True, error_messages={
+            "unique": "This role already exists.",
+        },)
     description = models.TextField()
 
     def __str__(self) :
