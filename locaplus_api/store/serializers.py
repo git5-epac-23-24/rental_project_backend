@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Rent, Product
+from users.serializers import UserRetrieveSerializer
 
 class RentedSerializers(serializers.ModelSerializer):
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
@@ -32,17 +33,22 @@ class updateRentedSerializers(serializers.Serializer):
         model = Rent
         fields = ["status"]
         
-class getRentedSerialisers(serializers.ModelSerializer):
-    class Meta:
-        model= Rent
-        fields = '__all__'
-        depth = 1
-    
+
     
 class ProductSerializers(serializers.Serializer):
      id = serializers.IntegerField(read_only=True)
+     owner = UserRetrieveSerializer(many=False, read_only=True)
      
      class Meta:
          model= Product
          fields = ['__all__']
          depth = 1
+         
+class getRentedSerialisers(serializers.ModelSerializer):
+    user = UserRetrieveSerializer(many=False, read_only=True)
+    product = ProductSerializers(many=False, read_only=True)
+    class Meta:
+        model= Rent
+        fields = '__all__'
+        depth = 1
+    

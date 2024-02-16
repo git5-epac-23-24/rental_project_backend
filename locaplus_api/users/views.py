@@ -45,70 +45,71 @@ class CustomerViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 
-class OwnerViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows owners to be viewed or edited.
-    """
-    serializer_action_classes = {
-        'list': OwnerGetSerializer,
-        'partial_update': OwnerUpgradeSerializer
-    }
-    parser_classes = (MultiPartParser, FormParser)
+# class OwnerViewSet(viewsets.ModelViewSet):
+#     """
+#     API endpoint that allows owners to be viewed or edited.
+#     """
+#     serializer_action_classes = {
+#         'list': OwnerGetSerializer,
+#         'partial_update': OwnerUpgradeSerializer
+#     }
+#     parser_classes = (MultiPartParser, FormParser)
     
-    def get_serializer_class(self):
-        try:
-            return self.serializer_action_classes[self.action]
-        except (KeyError, AttributeError):
-            return super().get_serializer_class()
+#     def get_serializer_class(self):
+#         try:
+#             return self.serializer_action_classes[self.action]
+#         except (KeyError, AttributeError):
+#             return super().get_serializer_class()
         
-    parser_classes = (MultiPartParser, FormParser)
-    queryset = User.objects.all()
+#     parser_classes = (MultiPartParser, FormParser)
+#     queryset = User.objects.all()
     
-    def get_permissions(self):
-        """
-        Instantiates and returns the list of permissions that this view requires.
-        """
-        if self.action == 'upgrade':
-            permission_classes = [permissions.IsAuthenticated]
-        else:
-            permission_classes = []
+#     def get_permissions(self):
+#         """
+#         Instantiates and returns the list of permissions that this view requires.
+#         """
+#         if self.action == 'upgrade':
+#             permission_classes = [permissions.IsAuthenticated]
+#         else:
+#             permission_classes = []
             
-        return [permission() for permission in permission_classes]
+#         return [permission() for permission in permission_classes]
  
-    def get_queryset(self):
-        return User.objects.all()
+#     def get_queryset(self):
+#         return User.objects.all()
     
-    def create(self, request):
-        try:
-            data = request.data
-            # print(data)
-            # serializer = UserCreationSerializer(data=data)
-            print(request.FILES.dict())
-            serializer = OwnerCreationSerializer(data=data)
-            if serializer.is_valid():
-                # serializer.save
-                data = serializer.data
-                # data['profil_picture'] = request.data.images[0]
-                # data['id_card'] = request.data.images[1]
-                user = User.objects.create_user(**data)
-                user.role_set.add(Role.objects.get(name="OWNER"))
+#     def create(self, request):
+#         try:
+#             data = request.data
+#             # print(data)
+#             # serializer = UserCreationSerializer(data=data)
+#             print(request.FILES.dict())
+#             serializer = OwnerCreationSerializer(data=data)
+#             if serializer.is_valid():
+#                 # serializer.save
+#                 data = serializer.data
+#                 # data['profil_picture'] = request.data.images[0]
+#                 # data['id_card'] = request.data.images[1]
+#                 data['is_active'] = False
+#                 user = User.objects.create_user(**data)
+#                 user.role_set.add(Role.objects.get(name="OWNER"))
                 
-                return Response({
-                    "status": "success",
-                    "message": "Owner created successfully"
-                })
-            else:
-                return Response({
-                    "status": "error",
-                    "message": "Something went wrong",
-                    "error": serializer.errors
-                })
-        except Exception as e:
-            return Response({
-                "status": "error",
-                "message": "Something went wrong",
-                "error": str(e)
-            })
+#                 return Response({
+#                     "status": "success",
+#                     "message": "Owner created successfully"
+#                 })
+#             else:
+#                 return Response({
+#                     "status": "error",
+#                     "message": "Something went wrong",
+#                     "error": serializer.errors
+#                 })
+#         except Exception as e:
+#             return Response({
+#                 "status": "error",
+#                 "message": "Something went wrong",
+#                 "error": str(e)
+#             })
 
 @api_view(["POST"])
 def register_customer(request):

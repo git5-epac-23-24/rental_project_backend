@@ -7,6 +7,8 @@ from django.shortcuts import get_object_or_404
 from datetime import datetime
 from django.forms.models import model_to_dict
 from django.db.models import Q
+from django.conf import settings
+from django.core.mail import send_mail
 
 class RentedViewSet(viewsets.ModelViewSet):
     serializer_class = RentedSerializers
@@ -54,20 +56,26 @@ class RentedViewSet(viewsets.ModelViewSet):
                 rent.duration = start_date_n - end_date_n
                 rent.user = request.user
                 rent.save()
+                owner = rent.product.owner
+                subject = "Demande de location"
+                message = f"Chers {owner.username}, cet email vous a été envoyé en raison d'une récente demande de location de votre produit : {rent.product.name}.\nEn effet un client nommé {rent.user.username} a effectué une réservation de votre produit.\n Connectez-vous à votre compte pour plus d'information."
+                emailFrom = settings.EMAIL_HOST_USER
+                recipient = [owner.email,]
+                send_mail(subject=subject, message=message, from_email=emailFrom, recipient_list=recipient)
                 return Response({
-                    "status": "error",
+                    "status": "success",
                     "message": "Your reservation has been added successfully",
                     "data": model_to_dict(rent)
                 })
             else:
                 return Response({
                     "status": "error",
-                    "message": "Something went wrong",
+                    "message": "Serialization fails",
                     "error": serializer.errors
                 })
         except Exception as e:
             return Response({
-                    "status": "error",
+                    "status": "errors",
                     "message": "Something went wrong",
                     "error": str(e)
                 })
@@ -85,8 +93,14 @@ class RentedViewSet(viewsets.ModelViewSet):
             rent = get_object_or_404(Rent, pk=kwargs['pk'])
             rent.status = serializer.data['status']
             rent.save()
+            subject = "Confirmation de location"
+            user = rent.user
+            message = f"Chers {user.username}, cet email vous a été envoyé pour vous informer que votre demande de location du produit {rent.product.name} a été validé par le propritaire.\n Connectez-vous à votre compte pour plus d'informations."
+            emailFrom = settings.EMAIL_HOST_USER
+            recipient = [user.email,]
+            send_mail(subject=subject, message=message, from_email=emailFrom, recipient_list=recipient)
             return Response({
-                "status": "error",
+                "status": "success",
                 "message": "Status updated successfully for the reservation",
                 "data": model_to_dict(rent)
             })
