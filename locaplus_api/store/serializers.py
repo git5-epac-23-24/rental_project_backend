@@ -37,12 +37,13 @@ class updateRentedSerializers(serializers.Serializer):
     
 class ProductSerializers(serializers.ModelSerializer):
      id = serializers.IntegerField(read_only=True)
-     owner = UserSerializer(many=False, read_only=True)
+     picture = serializers.ImageField(max_length=None, allow_null=True, required=False)
+    #  owner = UserSerializer(many=False, read_only=True)
      
      class Meta:
          model= Product
-         fields = ['__all__']
-         depth = 1
+         fields = '__all__'
+        #  depth = 1
     
     
     
@@ -50,7 +51,7 @@ class ProductTypeSerializers(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     class Meta:
         model= ProductType
-        fields = ['__all__']
+        fields = '__all__'
         depth = 1
     
          

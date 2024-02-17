@@ -38,7 +38,7 @@ class UserSerializer(serializers.ModelSerializer):
         validators=[UniqueValidator(queryset=User.objects.all())]
         )
     
-    profil_picture = serializers.ImageField(required=False)
+    profil_picture = serializers.ImageField(required=False, allow_null=True)
     class Meta:
         model = User
         fields = [

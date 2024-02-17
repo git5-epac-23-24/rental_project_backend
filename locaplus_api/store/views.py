@@ -33,15 +33,15 @@ class RentedViewSet(viewsets.ModelViewSet):
         except (KeyError, AttributeError):
             return super().get_serializer_class()
 
-    def get_permissions(self):
-        """
-        Instantiates and returns the list of permissions that this view requires.
-        """
-        if self.action == "create":
-            permission_classes = [permissions.IsAuthenticated]
-        else:
-            permission_classes = [permissions.IsAdminUser]
-        return [permission() for permission in permission_classes]
+    # def get_permissions(self):
+    #     """
+    #     Instantiates and returns the list of permissions that this view requires.
+    #     """
+    #     if self.action == "create":
+    #         permission_classes = [permissions.IsAuthenticated]
+    #     else:
+    #         permission_classes = [permissions.IsAdminUser]
+    #     return [permission() for permission in permission_classes]
 
     def get_queryset(self):
         return Rent.objects.all().order_by("-start_date")
@@ -178,7 +178,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     def create(self, request):
         try:
             data = request.data
-            data["owner"] = request.user
+            # data["owner"] = request.user
             serializer = ProductSerializers(data=data, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -326,15 +326,15 @@ class ProductViewSet(viewsets.ModelViewSet):
 class ProductTypeViewSet(viewsets.ModelViewSet):
     serializer_class = ProductTypeSerializers
 
-    def get_permissions(self):
-        """
-        Instantiates and returns the list of permissions that this view requires.
-        """
-        if self.action == "create":
-            permission_classes = [permissions.IsAuthenticated]
-        else:
-            permission_classes = [permissions.IsAdminUser]
-        return [permission() for permission in permission_classes]
+    # def get_permissions(self):
+    #     """
+    #     Instantiates and returns the list of permissions that this view requires.
+    #     """
+    #     if self.action == "create":
+    #         permission_classes = [permissions.IsAuthenticated]
+    #     else:
+    #         permission_classes = [permissions.IsAdminUser]
+    #     return [permission() for permission in permission_classes]
 
     def get_queryset(self):
         return ProductType.objects.all().order_by("-created_at")
