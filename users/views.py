@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from users.models import User
+from store.models import Rent
 from users.serializers import (
     UserSerializer,
     OwnerSerializer,
@@ -72,7 +72,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 return Response({
                     "status": "error",
                     "message": "Something went wrong",
-                    "error": "Product not found"
+                    "error": "User not found"
                 }, status=404)
             rents = user.rents.all()
             list_rents = []
@@ -91,6 +91,34 @@ class UserViewSet(viewsets.ModelViewSet):
                 "error": str(e)
             })
 
+    def list_by_owner(self, request, *args, **kwargs):
+        try:
+            owner = Owner.objects.filter(pk=kwargs['pk']).first()
+            if (owner is None):
+                return Response({
+                    "status": "error",
+                    "message": "Something went wrong",
+                    "error": "Owner not found"
+                }, status=404)
+            products = owner.products.all()
+            list_products = []
+            for product in products:
+                list_products.append(product.id)
+            rents = Rent.objects.filter(product__in=list_products).all()
+            list_rents =  []
+            for rent in rents:
+                list_rents.append(rent)
+            return Response({
+                "status": "success",
+                "message": "",
+                "data": list_rents
+            })
+        except Exception as e:
+            return Response({
+                "status": "error",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
 
 # class CustomerViewSet(viewsets.ModelViewSet):
 #     """
