@@ -187,6 +187,8 @@ def register_customer(request):
         
             
             user = User.objects.create_user(**data)
+            user.profil_picture = profile
+            user.set_password(data['password'])
             user.save()
             user.role_set.add(Role.objects.get_or_create(name="CLIENT")[0])
             customer_group = Group.objects.get_or_create(name="Customer")[0]
@@ -219,6 +221,8 @@ def register_customer(request):
 @api_view(["POST"])
 def register_owner_complete(request):
     data = request.data
+    profile = data['profil_picture'] if 'profil_picture' in data else None
+    id_card = data['id_card'] if 'id_card' in data else None
     user_data = {
         "username": data["username"] if "username" in data else None,
         "email": data["email"] if "email" in data else None,
@@ -249,9 +253,12 @@ def register_owner_complete(request):
             # user = User.objects.create_user(**data)
 
             user = User.objects.create_user(**user_data)
+            user.profil_picture = profile
+            user.set_password(user_data['password'])
             owner = Owner(
                 user=user, id_card=data["id_card"] if "id_card" in data else None
             )
+            owner.id_card = id_card
             owner.save()
             owner_group = Group.objects.get_or_create(name="Owner")[0]
             user.groups.add(owner_group)
@@ -296,6 +303,7 @@ def register_owner_partial(request):
     id_card = data["id_card"]
     user = User.objects.get(id=user_id)
     owner = Owner(user=user, id_card=id_card)
+    owner.id_card = id_card
     owner.save()
     owner_group = Group.objects.get_or_create(name="Owner")[0]
     user.groups.add(owner_group)
