@@ -1,6 +1,5 @@
 from django.shortcuts import render
 from rest_framework import viewsets, permissions
-<<<<<<< HEAD
 from store.serializers import (
     RentedSerializers,
     CreateRentedSerializers,
@@ -11,10 +10,6 @@ from store.serializers import (
 )
 from store.models import Rent, Product, ProductType
 from users.models import User
-=======
-from store.serializers import RentedSerializers, CreateRentedSerializers, updateRentedSerializers, getRentedSerialisers
-from store.models import Rent, Product
->>>>>>> c6951b45b376c3d3cdd1070f2bdd9aeb5b56898d
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from datetime import datetime
