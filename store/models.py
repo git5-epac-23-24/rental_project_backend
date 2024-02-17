@@ -74,4 +74,3 @@ class Rent(models.Model):
 
 
 
-
