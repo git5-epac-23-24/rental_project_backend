@@ -73,3 +73,11 @@ class Subscribers(models.Model):
     
     def __str__(self) :
         return self.email
+
+class Email(models.Model):
+    sender = models.EmailField()
+    name = models.CharField(max_length=255 )
+    # subject = models.CharField(max_length=255)
+    body = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+

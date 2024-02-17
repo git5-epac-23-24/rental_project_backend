@@ -25,5 +25,6 @@ urlpatterns = [
     path("<int:pk>/rented/", views.UserViewSet.as_view({'get': 'list_by_user'})),
     path("owners/<int:pk>/rented/", views.UserViewSet.as_view({'get': 'list_by_owner'})),
     path('', include(routerSimple.urls)),
-    path('subscribers/message', views.SubscriberViewSet.as_view({'post': 'send_mail'}))
+    path('subscribers/message', views.SubscriberViewSet.as_view({'post': 'send_mail'})),
+    path("adminemail/", views.receive_email)
 ]

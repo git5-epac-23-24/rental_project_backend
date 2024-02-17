@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from rest_framework import viewsets, permissions
+<<<<<<< HEAD
 from store.serializers import (
     RentedSerializers,
     CreateRentedSerializers,
@@ -10,6 +11,10 @@ from store.serializers import (
 )
 from store.models import Rent, Product, ProductType
 from users.models import User
+=======
+from store.serializers import RentedSerializers, CreateRentedSerializers, updateRentedSerializers, getRentedSerialisers
+from store.models import Rent, Product
+>>>>>>> c6951b45b376c3d3cdd1070f2bdd9aeb5b56898d
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from datetime import datetime
@@ -127,12 +132,29 @@ class RentedViewSet(viewsets.ModelViewSet):
 
     def list_by_product(self, request, *args, **kwargs):
         try:
-            product = get_object_or_404(Product, pk=kwargs["pk"])
-
+            product = Product.objects.filter(pk=kwargs['pk']).first()
+            if (product is None):
+                return Response({
+                    "status": "error",
+                    "message": "Something went wrong",
+                    "error": "Product not found"
+                }, status=404)
+            rents = product.rents.all()
+            list_rents = []
+            for rent in rents:
+                list_rents.append(getRentedSerialisers(rent).data)
+            # print(rents.__class__.objects.all())
+            return Response({
+                "status": "success",
+                "message": "",
+                "data": list_rents
+            })
         except Exception as e:
-            return Response(
-                {"status": "error", "message": "Something went wrong", "error": str(e)}
-            )
+            return Response({
+                "status": "error",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
 
 
 class ProductViewSet(viewsets.ModelViewSet):
