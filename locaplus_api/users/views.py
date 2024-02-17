@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from users.models import User
+from users.models import Email
 from users.serializers import (
     UserSerializer,
     OwnerSerializer,
@@ -366,3 +367,21 @@ def login_user(request):
 def logout_user(request):
     token = RefreshToken(request.data["token"])
     token.blacklist()
+
+
+@api_view(["POST"])
+def receive_email(request):
+    try:
+        data = request.data
+        sender = data["sender"]
+        name = data["name"]
+        # subject = data["subject"]
+        body = data["body"]
+
+        email = Email.objects.create(sender=sender, name = name,  body=body)
+            
+        return Response({'message': 'E-mail enregistré avec succès.'})
+    
+    except Exception as e:
+        return Response({'message': "Votre email s'est égaré en cours de route"})
+    
