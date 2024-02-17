@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 from django.contrib.auth.models import Group
-from users.models import User, Owner, Role
+from users.models import User, Owner, Role, Subscribers
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -16,7 +16,12 @@ from users.serializers import (
     UserUpdateSerializer,
     UserCreationSerializer,
     UserTestSerializer,
+    SubscriberSerializer,
+    MailSerializer
 )
+from store.serializers import getRentedSerialisers
+from django.conf import settings
+from django.core.mail import send_mail
 
 
 from django.contrib.auth import authenticate
@@ -59,6 +64,32 @@ class UserViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=204)
+    
+    def list_by_user(self, request, *args, **kwargs):
+        try:
+            user = User.objects.filter(pk=kwargs['pk']).first()
+            if (user is None):
+                return Response({
+                    "status": "error",
+                    "message": "Something went wrong",
+                    "error": "Product not found"
+                }, status=404)
+            rents = user.rents.all()
+            list_rents = []
+            for rent in rents:
+                list_rents.append(getRentedSerialisers(rent).data)
+            # print(rents.__class__.objects.all())
+            return Response({
+                "status": "success",
+                "message": "",
+                "data": list_rents
+            })
+        except Exception as e:
+            return Response({
+                "status": "error",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
 
 
 # class CustomerViewSet(viewsets.ModelViewSet):
@@ -139,7 +170,81 @@ class UserViewSet(viewsets.ModelViewSet):
 #     queryset = Customer.objects.all()
 #     serializer_class = CustomerSerializer
 #     permission_classes = [permissions.IsAuthenticated]
-
+class SubscriberViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows subscribers to be viewed or edited.
+    """
+    queryset = Subscribers.objects.all()
+    serializer_class = SubscriberSerializer
+    
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action == 'create':
+            permission_classes = []
+        else:
+            permission_classes = [permissions.IsAdminUser]
+        return [permission() for permission in permission_classes]
+    
+    def create(self, request, *args, **kwargs):
+        try:
+            serializer = SubscriberSerializer(data=request.data)
+            if (serializer.is_valid()):
+                subscriber = Subscribers.objects.create(email= serializer.data['email'])
+                subject = "Abonnement à newsletter de Rental_app"
+                message = f"Votre abbonnement à la newsletter de Rental app a été enregistré avec succès.\nVous serez informés de toutes les actualités."
+                emailFrom = settings.EMAIL_HOST_USER
+                recipient = [serializer.data['email'],]
+                send_mail(subject=subject, message=message, from_email=emailFrom, recipient_list=recipient)
+                return Response({
+                    "status": "success",
+                    "message": "You have been subscribed successfully",
+                    "data": SubscriberSerializer(subscriber).data
+                })
+            else:
+                return Response({
+                    "status": "error",
+                    "message": "Serialization failed",
+                    "error": serializer.errors
+                }, status=200)     
+        except Exception as e:
+            return Response({
+                    "status": "error",
+                    "message": "Serialization failed",
+                    "error": str(e)
+                }, status=500)
+    
+    def send_mail(self, request, *args, **kwargs):
+        try:
+            mailSerializer = MailSerializer(data=request.data)
+            if (mailSerializer.is_valid()):
+                subject = mailSerializer.data['subject']
+                message = mailSerializer.data['message']
+                emailFrom = settings.EMAIL_HOST_USER
+                recipient = []
+                subscribers = Subscribers.objects.all()
+                for subscriber in subscribers:
+                    recipient.append(subscriber.email)
+                send_mail(subject=subject, message=message, from_email=emailFrom, recipient_list=recipient)
+                return Response({
+                    "status": "success",
+                    "message": "Email sended succesfully to all subscribers",
+                    "data": ""
+                }, status=200)
+            else:
+                return Response({
+                    "status": "error",
+                    "message": "Serialization failed",
+                    "error": mailSerializer.errors
+                }, status=200)     
+        except Exception as e:
+            return Response({
+                    "status": "error",
+                    "message": "Serialization failed",
+                    "error": str(e)
+                }, status=500)
+            
 
 class OwnerViewSet(viewsets.ModelViewSet):
     """
@@ -207,7 +312,7 @@ def register_customer(request):
             return Response(
                 {
                     "status": "error",
-                    "message": "Something went wrong",
+                    "message": "Serialization failed",
                     "errors": serializer.errors,
                 })
     except Exception as e:
