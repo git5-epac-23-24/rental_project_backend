@@ -205,4 +205,6 @@ SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(minutes=120)}
 
 ALLOWED_HOSTS = ['rental-project.onrender.com'] 
 
+ALLOWED_HOSTS = ['rental-project.onrender.com'] 
+
 APPEND_SLASH=False
