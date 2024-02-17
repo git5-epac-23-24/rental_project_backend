@@ -6,6 +6,9 @@ from rest_framework import permissions, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from django.core.mail import send_mail
+from django.conf import settings
+
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from users.models import User
@@ -379,8 +382,11 @@ def receive_email(request):
         # subject = data["subject"]
         body = data["body"]
 
+
         email = Email.objects.create(sender=sender, name = name,  body=body)
-            
+        
+        
+        # envoyer_email_admin(name, sender, body)   
         return Response({'message': 'E-mail enregistré avec succès.'})
     
     except Exception as e:
@@ -400,3 +406,9 @@ def suscribe_to_newsletter(request):
     except Exception as e:
         return Response({'message': "Désolé!, nous n'avons pas pu vous enregistrez."})
     
+
+def envoyer_email_admin(nom_utilisateur, email_utilisateur, contenu_email):
+    sujet = f"Nouveau mail de {nom_utilisateur}"
+    message = contenu_email
+    adresse_email_admin = settings.EMAIL_HOST_USER  # Remplacez par l'adresse e-mail de l'administrateur
+    send_mail(sujet, message, email_utilisateur, adresse_email_admin)
