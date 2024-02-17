@@ -19,5 +19,6 @@ urlpatterns = [
     path("customers/<int:pk>/", views.UserViewSet.as_view({"get": "retrieve","post": "update", "delete": "destroy"})),
     path("owners/", views.OwnerViewSet.as_view({"get": "list"})),
     path("owners/<int:pk>/", views.OwnerViewSet.as_view({"get": "retrieve","post": "update", "delete": "destroy"})),
-    path("adminemail/", views.receive_email)
+    path("adminemail/", views.receive_email),
+    path("suscribetonewsletter/", views.suscribe_to_newsletter)
 ]

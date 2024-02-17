@@ -10,6 +10,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from users.models import User
 from users.models import Email
+from users.models import NewsLetter
 from users.serializers import (
     UserSerializer,
     OwnerSerializer,
@@ -384,4 +385,18 @@ def receive_email(request):
     
     except Exception as e:
         return Response({'message': "Votre email s'est égaré en cours de route"})
+    
+
+@api_view(["POST"])
+def suscribe_to_newsletter(request):
+    try:
+        data = request.data
+        mail = data["mail"]
+
+        mail = NewsLetter.objects.create(mail = mail)
+
+        return Response({'message': 'Vous avez été enregistré avec succès dans la newletter'})
+    
+    except Exception as e:
+        return Response({'message': "Désolé!, nous n'avons pas pu vous enregistrez."})
     

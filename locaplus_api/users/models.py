@@ -53,3 +53,6 @@ class Email(models.Model):
     # subject = models.CharField(max_length=255)
     body = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+
+class NewsLetter(models.Model):
+    mail = models.EmailField()
