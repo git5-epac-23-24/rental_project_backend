@@ -39,18 +39,18 @@ if not __debug__:
 MEDIA_ROOT = BASE_DIR / 'static/images'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_USE_TLS = True
-# EMAIL_PORT = 587
-# EMAIL_HOST_USER = "marcolinsensor@gmail.com"
-# EMAIL_HOST_PASSWORD = "xcotzmqvmcjqbufs"
-
-EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
-EMAIL_HOST_USER = 'e72c9e042f0d1f'
-EMAIL_HOST_PASSWORD = '9f0ae76c366709'
-EMAIL_PORT = '2525'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "marcolinsensor@gmail.com"
+EMAIL_HOST_PASSWORD = "xcotzmqvmcjqbufs"
+
+# EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
+# EMAIL_HOST_USER = 'e72c9e042f0d1f'
+# EMAIL_HOST_PASSWORD = '9f0ae76c366709'
+# EMAIL_PORT = '2525'
+# EMAIL_USE_TLS = True
 
 
 # http://127.0.0.1:8000/static/images/users/profil_picture/2024/02/15/Capture_d%C3%A9cran_du_2024-02-15_11-00-07.png
