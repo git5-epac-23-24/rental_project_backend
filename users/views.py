@@ -47,6 +47,16 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by("-date_joined")
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+    serializer_action_classes = {
+        'list_by_owner': OwnerSerializer,
+    }
+    
+    def get_serializer_class(self):
+        try:
+            return self.serializer_action_classes[self.action]
+        except (KeyError, AttributeError):
+            return super().get_serializer_class()
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -93,6 +103,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def list_by_owner(self, request, *args, **kwargs):
         try:
+            serializer_class = OwnerSerializer
             owner = Owner.objects.filter(pk=kwargs['pk']).first()
             if (owner is None):
                 return Response({
@@ -100,14 +111,10 @@ class UserViewSet(viewsets.ModelViewSet):
                     "message": "Something went wrong",
                     "error": "Owner not found"
                 }, status=404)
-            products = owner.products.all()
-            list_products = []
-            for product in products:
-                list_products.append(product.id)
-            rents = Rent.objects.filter(product__in=list_products).all()
+            rents = Rent.objects.filter(product__owner=owner).all()
             list_rents =  []
             for rent in rents:
-                list_rents.append(rent)
+                list_rents.append(getRentedSerialisers(rent).data)
             return Response({
                 "status": "success",
                 "message": "",

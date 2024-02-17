@@ -219,6 +219,6 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(hours=24)}
 
-ALLOWED_HOSTS = ['rental-project.onrender.com'] 
+ALLOWED_HOSTS = ['rental-project.onrender.com', '127.0.0.1', 'localhost'] 
 
 APPEND_SLASH=False
