@@ -29,9 +29,7 @@ class User(AbstractUser):
     address = models.CharField(max_length=50)
     city = models.CharField(max_length=50)
     country = models.CharField(max_length=50)
-    id_card = models.ImageField(
-        upload_to="users/owners/id_card/%Y/%m/%d/", blank=True, null=True
-    )
+    # password 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -63,5 +61,23 @@ class Role(models.Model):
     )
     description = models.TextField()
 
-    def __str__(self):
+    def __str__(self) :
         return self.name
+    
+    
+class Subscribers(models.Model):
+    email = models.EmailField("email address", unique=True, 
+        error_messages={
+            "unique": "A subscriber with that email already exists.",
+        },)
+    
+    def __str__(self) :
+        return self.email
+
+class Email(models.Model):
+    sender = models.EmailField()
+    name = models.CharField(max_length=255 )
+    # subject = models.CharField(max_length=255)
+    body = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+

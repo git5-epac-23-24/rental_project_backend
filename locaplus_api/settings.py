@@ -46,6 +46,13 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = "marcolinsensor@gmail.com"
 EMAIL_HOST_PASSWORD = "xcotzmqvmcjqbufs"
 
+# EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
+# EMAIL_HOST_USER = 'e72c9e042f0d1f'
+# EMAIL_HOST_PASSWORD = '9f0ae76c366709'
+# EMAIL_PORT = '2525'
+# EMAIL_USE_TLS = True
+
+
 # http://127.0.0.1:8000/static/images/users/profil_picture/2024/02/15/Capture_d%C3%A9cran_du_2024-02-15_11-00-07.png
 
 # Quick-start development settings - unsuitable for production
@@ -69,6 +76,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    'corsheaders',
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "users",
@@ -76,6 +84,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -85,6 +94,21 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "DELETE",
+    "OPTIONS",
+]
+
+CORS_ALLOW_HEADERS = [
+    "Content-Type",  # Add 'Content-Type' to allowed headers
+    "Authorization",
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = "locaplus_api.urls"
 
@@ -201,7 +225,9 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
 }
 
-SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(minutes=120)}
+SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(hours=24)}
+
+ALLOWED_HOSTS = ['rental-project.onrender.com', '127.0.0.1', 'localhost'] 
 
 ALLOWED_HOSTS = ['rental-project.onrender.com'] 
 

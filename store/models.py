@@ -23,7 +23,7 @@ class ProductType(models.Model):
 
 
 class Product(models.Model):
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="products")
+    owner = models.ForeignKey(Owner, on_delete=models.CASCADE, related_name="products")
     name = models.CharField(max_length=50, blank=True, null=True)
     # location = models.CharField(max_length=500)
     description = models.TextField()
@@ -70,7 +70,6 @@ class Rent(models.Model):
 
     def __str__(self):
         return self.user.username + " a loué le produit : "+self.product.name
-
 
 
 

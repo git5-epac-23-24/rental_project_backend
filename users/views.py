@@ -1,14 +1,17 @@
 from django.shortcuts import render
 
 from django.contrib.auth.models import Group
-from users.models import User, Owner, Role
+from users.models import User, Owner, Role, Subscribers, Email
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from django.core.mail import send_mail
+from django.conf import settings
+
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from users.models import User
+from store.models import Rent
 from users.serializers import (
     UserSerializer,
     OwnerSerializer,
@@ -16,7 +19,12 @@ from users.serializers import (
     UserUpdateSerializer,
     UserCreationSerializer,
     UserTestSerializer,
+    SubscriberSerializer,
+    MailSerializer
 )
+from store.serializers import getRentedSerialisers
+from django.conf import settings
+from django.core.mail import send_mail
 
 
 from django.contrib.auth import authenticate
@@ -42,6 +50,16 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by("-date_joined")
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+    serializer_action_classes = {
+        'list_by_owner': OwnerSerializer,
+    }
+    
+    def get_serializer_class(self):
+        try:
+            return self.serializer_action_classes[self.action]
+        except (KeyError, AttributeError):
+            return super().get_serializer_class()
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -59,7 +77,58 @@ class UserViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=204)
+    
+    def list_by_user(self, request, *args, **kwargs):
+        try:
+            user = User.objects.filter(pk=kwargs['pk']).first()
+            if (user is None):
+                return Response({
+                    "status": "error",
+                    "message": "Something went wrong",
+                    "error": "User not found"
+                }, status=404)
+            rents = user.rents.all()
+            list_rents = []
+            for rent in rents:
+                list_rents.append(getRentedSerialisers(rent).data)
+            # print(rents.__class__.objects.all())
+            return Response({
+                "status": "success",
+                "message": "",
+                "data": list_rents
+            })
+        except Exception as e:
+            return Response({
+                "status": "error",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
 
+    def list_by_owner(self, request, *args, **kwargs):
+        try:
+            serializer_class = OwnerSerializer
+            owner = Owner.objects.filter(pk=kwargs['pk']).first()
+            if (owner is None):
+                return Response({
+                    "status": "error",
+                    "message": "Something went wrong",
+                    "error": "Owner not found"
+                }, status=404)
+            rents = Rent.objects.filter(product__owner=owner).all()
+            list_rents =  []
+            for rent in rents:
+                list_rents.append(getRentedSerialisers(rent).data)
+            return Response({
+                "status": "success",
+                "message": "",
+                "data": list_rents
+            })
+        except Exception as e:
+            return Response({
+                "status": "error",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
 
 # class CustomerViewSet(viewsets.ModelViewSet):
 #     """
@@ -139,7 +208,81 @@ class UserViewSet(viewsets.ModelViewSet):
 #     queryset = Customer.objects.all()
 #     serializer_class = CustomerSerializer
 #     permission_classes = [permissions.IsAuthenticated]
-
+class SubscriberViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows subscribers to be viewed or edited.
+    """
+    queryset = Subscribers.objects.all()
+    serializer_class = SubscriberSerializer
+    
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action == 'create':
+            permission_classes = []
+        else:
+            permission_classes = [permissions.IsAdminUser]
+        return [permission() for permission in permission_classes]
+    
+    def create(self, request, *args, **kwargs):
+        try:
+            serializer = SubscriberSerializer(data=request.data)
+            if (serializer.is_valid()):
+                subscriber = Subscribers.objects.create(email= serializer.data['email'])
+                subject = "Abonnement à newsletter de Rental_app"
+                message = f"Votre abbonnement à la newsletter de Rental app a été enregistré avec succès.\nVous serez informés de toutes les actualités."
+                emailFrom = settings.EMAIL_HOST_USER
+                recipient = [serializer.data['email'],]
+                send_mail(subject=subject, message=message, from_email=emailFrom, recipient_list=recipient)
+                return Response({
+                    "status": "success",
+                    "message": "You have been subscribed successfully",
+                    "data": SubscriberSerializer(subscriber).data
+                })
+            else:
+                return Response({
+                    "status": "error",
+                    "message": "Serialization failed",
+                    "error": serializer.errors
+                }, status=200)     
+        except Exception as e:
+            return Response({
+                    "status": "error",
+                    "message": "Serialization failed",
+                    "error": str(e)
+                }, status=500)
+    
+    def send_mail(self, request, *args, **kwargs):
+        try:
+            mailSerializer = MailSerializer(data=request.data)
+            if (mailSerializer.is_valid()):
+                subject = mailSerializer.data['subject']
+                message = mailSerializer.data['message']
+                emailFrom = settings.EMAIL_HOST_USER
+                recipient = []
+                subscribers = Subscribers.objects.all()
+                for subscriber in subscribers:
+                    recipient.append(subscriber.email)
+                send_mail(subject=subject, message=message, from_email=emailFrom, recipient_list=recipient)
+                return Response({
+                    "status": "success",
+                    "message": "Email sended succesfully to all subscribers",
+                    "data": ""
+                }, status=200)
+            else:
+                return Response({
+                    "status": "error",
+                    "message": "Serialization failed",
+                    "error": mailSerializer.errors
+                }, status=200)     
+        except Exception as e:
+            return Response({
+                    "status": "error",
+                    "message": "Serialization failed",
+                    "error": str(e)
+                }, status=500)
+            
 
 class OwnerViewSet(viewsets.ModelViewSet):
     """
@@ -206,7 +349,7 @@ def register_customer(request):
             return Response(
                 {
                     "status": "error",
-                    "message": "Something went wrong",
+                    "message": "Serialization failed",
                     "errors": serializer.errors,
                 }
             )
@@ -379,3 +522,50 @@ def login_user(request):
 def logout_user(request):
     token = RefreshToken(request.data["token"])
     token.blacklist()
+
+
+@api_view(["POST"])
+def receive_email(request):
+    try:
+        data = request.data
+        sender = data["sender"]
+        name = data["name"]
+        # subject = data["subject"]
+        body = data["body"]
+
+
+        email = Email.objects.create(sender=sender, name = name,  body=body)
+        
+        
+        # envoyer_email_admin(name, sender, body)   
+        return Response({'message': 'Message enregistré avec succès.'})
+    
+    except Exception as e:
+        return Response(
+            {
+                "status": "error",
+                "message": "Something went wrong",
+                "errors": str(e),
+            }
+        )
+    
+
+# @api_view(["POST"])
+# def suscribe_to_newsletter(request):
+#     try:
+#         data = request.data
+#         mail = data["mail"]
+
+#         mail = NewsLetter.objects.create(mail = mail)
+
+#         return Response({'message': 'Vous avez été enregistré avec succès dans la newletter'})
+    
+#     except Exception as e:
+#         return Response({'message': "Désolé!, nous n'avons pas pu vous enregistrez."})
+    
+
+def envoyer_email_admin(nom_utilisateur, email_utilisateur, contenu_email):
+    sujet = f"Nouveau mail de {nom_utilisateur}"
+    message = contenu_email
+    adresse_email_admin = settings.EMAIL_HOST_USER  # Remplacez par l'adresse e-mail de l'administrateur
+    send_mail(sujet, message, email_utilisateur, adresse_email_admin)
