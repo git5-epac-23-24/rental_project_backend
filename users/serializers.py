@@ -362,30 +362,19 @@ class FileListSerializer ( serializers.Serializer ) :
 class OwnerCreationSerializer(serializers.ModelSerializer):
     files = serializers.ListField(child=serializers.FileField())
     class Meta:
-        model = User
-        fields = [
-            "username",
-            "first_name",
-            "last_name",
-            "id_card",
-            "profil_picture",
-            "email",
-            "phone",
-            "city",
-            "country",
-            "files",
-            "password"
-        ]
+        model = Owner
+        fields = '__all__'
 
 class OwnerGetSerializer(serializers.ModelSerializer):
+    user = UserRetrieveSerializer(many=False, read_only=True)
     class Meta:
-        model = User
+        model = Owner
         fields = '__all__'
         
 class OwnerUpgradeSerializer(serializers.ModelSerializer):
     id_card = serializers.ImageField(required=True)
     class Meta:
-        model = User
+        model = Owner
         fields = ['id_card']  
 
 # class GroupSerializer(serializers.ModelSerializer):

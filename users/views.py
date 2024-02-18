@@ -1,14 +1,17 @@
 from django.shortcuts import render
 
 from django.contrib.auth.models import Group
-from users.models import User, Owner, Role, Subscribers
+from users.models import User, Owner, Role, Subscribers, Email
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from django.core.mail import send_mail
+from django.conf import settings
+
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from users.models import User
+from store.models import Rent
 from users.serializers import (
     UserSerializer,
     OwnerSerializer,
@@ -47,6 +50,16 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by("-date_joined")
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+    serializer_action_classes = {
+        'list_by_owner': OwnerSerializer,
+    }
+    
+    def get_serializer_class(self):
+        try:
+            return self.serializer_action_classes[self.action]
+        except (KeyError, AttributeError):
+            return super().get_serializer_class()
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -72,7 +85,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 return Response({
                     "status": "error",
                     "message": "Something went wrong",
-                    "error": "Product not found"
+                    "error": "User not found"
                 }, status=404)
             rents = user.rents.all()
             list_rents = []
@@ -91,6 +104,31 @@ class UserViewSet(viewsets.ModelViewSet):
                 "error": str(e)
             })
 
+    def list_by_owner(self, request, *args, **kwargs):
+        try:
+            serializer_class = OwnerSerializer
+            owner = Owner.objects.filter(pk=kwargs['pk']).first()
+            if (owner is None):
+                return Response({
+                    "status": "error",
+                    "message": "Something went wrong",
+                    "error": "Owner not found"
+                }, status=404)
+            rents = Rent.objects.filter(product__owner=owner).all()
+            list_rents =  []
+            for rent in rents:
+                list_rents.append(getRentedSerialisers(rent).data)
+            return Response({
+                "status": "success",
+                "message": "",
+                "data": list_rents
+            })
+        except Exception as e:
+            return Response({
+                "status": "error",
+                "message": "Something went wrong",
+                "error": str(e)
+            })
 
 # class CustomerViewSet(viewsets.ModelViewSet):
 #     """
@@ -292,6 +330,8 @@ def register_customer(request):
         
             
             user = User.objects.create_user(**data)
+            user.profil_picture = profile
+            user.set_password(data['password'])
             user.save()
             user.role_set.add(Role.objects.get_or_create(name="CLIENT")[0])
             customer_group = Group.objects.get_or_create(name="Customer")[0]
@@ -324,6 +364,8 @@ def register_customer(request):
 @api_view(["POST"])
 def register_owner_complete(request):
     data = request.data
+    profile = data['profil_picture'] if 'profil_picture' in data else None
+    id_card = data['id_card'] if 'id_card' in data else None
     user_data = {
         "username": data["username"] if "username" in data else None,
         "email": data["email"] if "email" in data else None,
@@ -354,9 +396,12 @@ def register_owner_complete(request):
             # user = User.objects.create_user(**data)
 
             user = User.objects.create_user(**user_data)
+            user.profil_picture = profile
+            user.set_password(user_data['password'])
             owner = Owner(
                 user=user, id_card=data["id_card"] if "id_card" in data else None
             )
+            owner.id_card = id_card
             owner.save()
             owner_group = Group.objects.get_or_create(name="Owner")[0]
             user.groups.add(owner_group)
@@ -401,6 +446,7 @@ def register_owner_partial(request):
     id_card = data["id_card"]
     user = User.objects.get(id=user_id)
     owner = Owner(user=user, id_card=id_card)
+    owner.id_card = id_card
     owner.save()
     owner_group = Group.objects.get_or_create(name="Owner")[0]
     user.groups.add(owner_group)
@@ -471,3 +517,50 @@ def login_user(request):
 def logout_user(request):
     token = RefreshToken(request.data["token"])
     token.blacklist()
+
+
+@api_view(["POST"])
+def receive_email(request):
+    try:
+        data = request.data
+        sender = data["sender"]
+        name = data["name"]
+        # subject = data["subject"]
+        body = data["body"]
+
+
+        email = Email.objects.create(sender=sender, name = name,  body=body)
+        
+        
+        # envoyer_email_admin(name, sender, body)   
+        return Response({'message': 'Message enregistré avec succès.'})
+    
+    except Exception as e:
+        return Response(
+            {
+                "status": "error",
+                "message": "Something went wrong",
+                "errors": str(e),
+            }
+        )
+    
+
+# @api_view(["POST"])
+# def suscribe_to_newsletter(request):
+#     try:
+#         data = request.data
+#         mail = data["mail"]
+
+#         mail = NewsLetter.objects.create(mail = mail)
+
+#         return Response({'message': 'Vous avez été enregistré avec succès dans la newletter'})
+    
+#     except Exception as e:
+#         return Response({'message': "Désolé!, nous n'avons pas pu vous enregistrez."})
+    
+
+def envoyer_email_admin(nom_utilisateur, email_utilisateur, contenu_email):
+    sujet = f"Nouveau mail de {nom_utilisateur}"
+    message = contenu_email
+    adresse_email_admin = settings.EMAIL_HOST_USER  # Remplacez par l'adresse e-mail de l'administrateur
+    send_mail(sujet, message, email_utilisateur, adresse_email_admin)
