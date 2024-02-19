@@ -320,19 +320,10 @@ class OwnerViewSet(viewsets.ModelViewSet):
 def register_customer(request):
     try:
         data = request.data
-        profile = data['profil_picture']
-        # serializer = UserCreationSerializer(data=data)
+        # profile = data['profil_picture'] if 'profil_picture' in data else None
         serializer = UserSerializer(data=data, partial=True)
         if serializer.is_valid():
-            # serializer.save
-            data = serializer.data
-            # data['profil_picture'] = profile
-        
-            
-            user = User.objects.create_user(**data)
-            user.profil_picture = profile
-            user.set_password(data['password'])
-            user.save()
+            user = serializer.save()
             user.role_set.add(Role.objects.get_or_create(name="CLIENT")[0])
             customer_group = Group.objects.get_or_create(name="Customer")[0]
             user.groups.add(customer_group)
