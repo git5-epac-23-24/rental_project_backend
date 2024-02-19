@@ -170,19 +170,19 @@ class OwnerSerializer(serializers.ModelSerializer):
         return owner
     
     def update(self, instance, validated_data):
-        user_data = validated_data.pop("user")
-        user = instance.user
-        user.username = user_data.get("username", user.username)
-        user.first_name = user_data.get("first_name", user.first_name)
-        user.last_name = user_data.get("last_name", user.last_name)
-        user.email = user_data.get("email", user.email)
-        user.phone = user_data.get("phone", user.phone)
-        user.address = user_data.get("address", user.address)
-        user.city = user_data.get("city", user.city)
-        user.country = user_data.get("country", user.country)
-        user.profil_picture = user_data.get("profil_picture", user.profil_picture)
-        user.set_password(user_data.get("password", user.password))
-        user.save()
+        # user_data = validated_data.pop("user")
+        # user = instance.user
+        # user.username = user_data.get("username", user.username)
+        # user.first_name = user_data.get("first_name", user.first_name)
+        # user.last_name = user_data.get("last_name", user.last_name)
+        # user.email = user_data.get("email", user.email)
+        # user.phone = user_data.get("phone", user.phone)
+        # user.address = user_data.get("address", user.address)
+        # user.city = user_data.get("city", user.city)
+        # user.country = user_data.get("country", user.country)
+        # user.profil_picture = user_data.get("profil_picture", user.profil_picture)
+        # user.set_password(user_data.get("password", user.password))
+        # user.save()
         
         instance.id_card = validated_data.get("id_card", instance.id_card)
         instance.save()
@@ -251,7 +251,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     city = serializers.CharField(max_length=50, required=False) 
     country = serializers.CharField(max_length=50, required=False)
     profil_picture = serializers.ImageField(required=False)
-    password = serializers.CharField(max_length=50, required=False)
+    password = serializers.CharField(max_length=50, required=False, write_only=True)
     class Meta:
         model = User
         fields = [
