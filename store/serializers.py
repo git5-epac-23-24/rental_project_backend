@@ -14,6 +14,7 @@ class RentedSerializers(serializers.ModelSerializer):
     
 class CreateRentedSerializers(serializers.ModelSerializer):
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
+    
     def validate(self, data):
         if data['start_date'] > data['end_date']:
             raise serializers.ValidationError("start date must be lower than end_date")
@@ -40,8 +41,9 @@ class ProductSerializers(serializers.ModelSerializer):
      owner = OwnerGetSerializer(many=False, read_only=True)
      
      class Meta:
-         model= Product
-         fields = '__all__'
+        model= Product
+        fields = '__all__'
+        # exclude= ('picture',)
         #  depth = 1
     
     

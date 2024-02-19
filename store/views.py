@@ -65,9 +65,9 @@ class RentedViewSet(viewsets.ModelViewSet):
                 rent.save()
                 owner = rent.product.owner
                 subject = "Demande de location"
-                message = f"Chers {owner.username}, cet email vous a été envoyé en raison d'une récente demande de location de votre produit : {rent.product.name}.\nEn effet un client nommé {rent.user.username} a effectué une réservation de votre produit.\n Connectez-vous à votre compte pour plus d'information."
+                message = f"Chers {owner.user.username}, cet email vous a été envoyé en raison d'une récente demande de location de votre produit : {rent.product.name}.\nEn effet un client nommé {rent.user.username} a effectué une réservation de votre produit.\n Connectez-vous à votre compte pour plus d'information."
                 emailFrom = settings.EMAIL_HOST_USER
-                recipient = [owner.email,]
+                recipient = [owner.user.email,]
                 send_mail(subject=subject, message=message, from_email=emailFrom, recipient_list=recipient)
                 return Response({
                     "status": "success",
