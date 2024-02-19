@@ -41,8 +41,8 @@ class ProductSerializers(serializers.ModelSerializer):
      
      class Meta:
          model= Product
-         exclude = ('picture',)
-         depth = 1
+         fields = '__all__'
+        #  depth = 1
     
     
     
@@ -50,7 +50,7 @@ class ProductTypeSerializers(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     class Meta:
         model= ProductType
-        fields = ['__all__']
+        fields = '__all__'
         depth = 1
     
          

@@ -62,8 +62,10 @@ class UserViewSet(viewsets.ModelViewSet):
             return super().get_serializer_class()
 
     def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = UserSerializer(instance, data=request.data, partial=True)
+        # instance = self.get_object()
+        # serializer = UserSerializer(instance, data=request.data, partial=True)
+        user = request.user
+        serializer = UserSerializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=200)
@@ -130,84 +132,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 "error": str(e)
             })
 
-# class CustomerViewSet(viewsets.ModelViewSet):
-#     """
-#     API endpoint that allows customers to be viewed or edited.
-#     """
 
-    # queryset = User.objects.filter(role__name = "CLIENT")
-    # serializer_class = UserRetrieveSerializer
-    # permission_classes = [permissions.IsAuthenticated]
-
-
-# class OwnerViewSet(viewsets.ModelViewSet):
-#     """
-#     API endpoint that allows owners to be viewed or edited.
-#     """
-#     serializer_action_classes = {
-#         'list': OwnerGetSerializer,
-#         'partial_update': OwnerUpgradeSerializer
-#     }
-#     parser_classes = (MultiPartParser, FormParser)
-    
-#     def get_serializer_class(self):
-#         try:
-#             return self.serializer_action_classes[self.action]
-#         except (KeyError, AttributeError):
-#             return super().get_serializer_class()
-        
-#     parser_classes = (MultiPartParser, FormParser)
-#     queryset = User.objects.all()
-    
-#     def get_permissions(self):
-#         """
-#         Instantiates and returns the list of permissions that this view requires.
-#         """
-#         if self.action == 'upgrade':
-#             permission_classes = [permissions.IsAuthenticated]
-#         else:
-#             permission_classes = []
-            
-#         return [permission() for permission in permission_classes]
- 
-#     def get_queryset(self):
-#         return User.objects.all()
-    
-#     def create(self, request):
-#         try:
-#             data = request.data
-#             # print(data)
-#             # serializer = UserCreationSerializer(data=data)
-#             print(request.FILES.dict())
-#             serializer = OwnerCreationSerializer(data=data)
-#             if serializer.is_valid():
-#                 # serializer.save
-#                 data = serializer.data
-#                 # data['profil_picture'] = request.data.images[0]
-#                 # data['id_card'] = request.data.images[1]
-#                 data['is_active'] = False
-#                 user = User.objects.create_user(**data)
-#                 user.role_set.add(Role.objects.get(name="OWNER"))
-                
-#                 return Response({
-#                     "status": "success",
-#                     "message": "Owner created successfully"
-#                 })
-#             else:
-#                 return Response({
-#                     "status": "error",
-#                     "message": "Something went wrong",
-#                     "error": serializer.errors
-#                 })
-#         except Exception as e:
-#             return Response({
-#                 "status": "error",
-#                 "message": "Something went wrong",
-#                 "error": str(e)
-#             })
-#     queryset = Customer.objects.all()
-#     serializer_class = CustomerSerializer
-#     permission_classes = [permissions.IsAuthenticated]
 class SubscriberViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows subscribers to be viewed or edited.
@@ -300,15 +225,22 @@ class OwnerViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         queryset = Owner.objects.all()
-        serializer =  OwnerSerializer(queryset, many=True)
+        serializer = OwnerSerializer(queryset, many=True)
         return Response(serializer.data, status=200)
 
     def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = OwnerSerializer(instance, data=request.data, partial=True)
+        # instance = self.get_object()
+        # serializer = OwnerSerializer(instance, data=request.data, partial=True)
+        user = request.user
+        user_data = request.data.pop("user") if "user" in request.data else {}
+        serializer = UserSerializer(user, data=user_data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=200)
+        owner = request.user.owner
+        serializer2 = OwnerSerializer(owner, data=request.data, partial=True)
+        serializer2.is_valid(raise_exception=True)
+        serializer2.save()
+        return Response(serializer2.data, status=200)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -343,20 +275,19 @@ def register_customer(request):
                     "status": "error",
                     "message": "Serialization failed",
                     "errors": serializer.errors,
-                })
+                }
+            )
     except Exception as e:
-        return Response({
-                "status": "errors",
-                "message": "Something went wrong",
-                "error": str(e)
-            })
+        return Response(
+            {"status": "errors", "message": "Something went wrong", "error": str(e)}
+        )
 
 
 @api_view(["POST"])
 def register_owner_complete(request):
     data = request.data
-    profile = data['profil_picture'] if 'profil_picture' in data else None
-    id_card = data['id_card'] if 'id_card' in data else None
+    profile = data["profil_picture"] if "profil_picture" in data else None
+    id_card = data["id_card"] if "id_card" in data else None
     user_data = {
         "username": data["username"] if "username" in data else None,
         "email": data["email"] if "email" in data else None,
@@ -373,7 +304,7 @@ def register_owner_complete(request):
         "user": user_data,
         "id_card": data["id_card"] if "id_card" in data else None,
     }
-    serializer =  OwnerSerializer(data=data, partial=True)
+    serializer = OwnerSerializer(data=data, partial=True)
     if serializer.is_valid():
         # serializer.save
         data = serializer.data
@@ -388,7 +319,7 @@ def register_owner_complete(request):
 
             user = User.objects.create_user(**user_data)
             user.profil_picture = profile
-            user.set_password(user_data['password'])
+            user.set_password(user_data["password"])
             owner = Owner(
                 user=user, id_card=data["id_card"] if "id_card" in data else None
             )
@@ -412,7 +343,7 @@ def register_owner_complete(request):
             #     "city": user.city,
             #     "country": user.country,
             # }
-            owner_data =  OwnerSerializer(owner).data
+            owner_data = OwnerSerializer(owner).data
             return Response(
                 {
                     "status": "success",
@@ -441,7 +372,14 @@ def register_owner_partial(request):
     owner.save()
     owner_group = Group.objects.get_or_create(name="Owner")[0]
     user.groups.add(owner_group)
-    return Response({"status": "success", "message": "Owner created successfully"})
+    owner_data = OwnerSerializer(owner).data
+    return Response(
+        {
+            "status": "success",
+            "message": "Owner created successfully",
+            "owner": owner_data,
+        }
+    )
 
 
 def get_tokens_for_user(user):
