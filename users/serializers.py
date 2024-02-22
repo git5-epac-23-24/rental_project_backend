@@ -41,20 +41,8 @@ class UserSerializer(serializers.ModelSerializer):
     profil_picture = serializers.ImageField(required=False, allow_null=True)
     class Meta:
         model = User
-        fields = [
-            "id",
-            "username",
-            "first_name",
-            "last_name",
-            "email",
-            "phone",
-            "address",
-            "city",
-            "country",
-            "profil_picture",
-            # "groups",
-            "password",
-        ]
+        depth = 1
+        fields = '__all__'
         extra_kwargs = {
             "password": {"write_only": True},
         }

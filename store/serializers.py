@@ -14,6 +14,7 @@ class RentedSerializers(serializers.ModelSerializer):
     
 class CreateRentedSerializers(serializers.ModelSerializer):
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
+    quantity = serializers.IntegerField(required=False, allow_null=True)
     
     def validate(self, data):
         if data['start_date'] > data['end_date']:
@@ -22,7 +23,7 @@ class CreateRentedSerializers(serializers.ModelSerializer):
     
     class Meta:
         model = Rent
-        fields = ["start_date", "end_date", "cost","product"]
+        fields = ["start_date", "end_date", "cost","product","quantity"]
     
     def create(self, validated_data):
         return Rent(**validated_data)

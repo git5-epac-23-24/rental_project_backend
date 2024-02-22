@@ -53,6 +53,7 @@ class UserViewSet(viewsets.ModelViewSet):
     
     serializer_action_classes = {
         'list_by_owner': OwnerSerializer,
+        'list': UserSerializer
     }
     
     def get_serializer_class(self):
@@ -256,7 +257,7 @@ def register_customer(request):
         serializer = UserSerializer(data=data, partial=True)
         if serializer.is_valid():
             user = serializer.save()
-            user.role_set.add(Role.objects.get_or_create(name="CLIENT")[0])
+            # user.role_set.add(Role.objects.get_or_create(name="CLIENT")[0])
             customer_group = Group.objects.get_or_create(name="Customer")[0]
             user.groups.add(customer_group)
             send_user_serializer = UserSerializer(user)
@@ -285,101 +286,113 @@ def register_customer(request):
 
 @api_view(["POST"])
 def register_owner_complete(request):
-    data = request.data
-    profile = data["profil_picture"] if "profil_picture" in data else None
-    id_card = data["id_card"] if "id_card" in data else None
-    user_data = {
-        "username": data["username"] if "username" in data else None,
-        "email": data["email"] if "email" in data else None,
-        "password": data["password"],
-        "first_name": data["first_name"] if "first_name" in data else None,
-        "last_name": data["last_name"] if "last_name" in data else None,
-        "phone": data["phone"] if "phone" in data else None,
-        "profil_picture": data["profil_picture"] if "profil_picture" in data else None,
-        "address": data["address"] if "address" in data else None,
-        "city": data["city"] if "city" in data else None,
-        "country": data["country"] if "country" in data else None,
-    }
-    data = {
-        "user": user_data,
-        "id_card": data["id_card"] if "id_card" in data else None,
-    }
-    serializer = OwnerSerializer(data=data, partial=True)
-    if serializer.is_valid():
-        # serializer.save
-        data = serializer.data
-        if User.objects.filter(username=data["user"]["username"]).exists():
-            return Response({"status": "error", "message": "Username already exists"})
-        elif User.objects.filter(email=data["user"]["email"]).exists():
-            return Response({"status": "error", "message": "Email already exists"})
-        elif User.objects.filter(phone=data["user"]["phone"]).exists():
-            return Response({"status": "error", "message": "Phone already exists"})
-        else:
-            # user = User.objects.create_user(**data)
+    try:
+        data = request.data
+        profile = data["profil_picture"] if "profil_picture" in data else None
+        id_card = data["id_card"] if "id_card" in data else None
+        user_data = {
+            "username": data["username"] if "username" in data else None,
+            "email": data["email"] if "email" in data else None,
+            "password": data["password"],
+            "first_name": data["first_name"] if "first_name" in data else None,
+            "last_name": data["last_name"] if "last_name" in data else None,
+            "phone": data["phone"] if "phone" in data else None,
+            "profil_picture": data["profil_picture"] if "profil_picture" in data else None,
+            "address": data["address"] if "address" in data else None,
+            "city": data["city"] if "city" in data else None,
+            "country": data["country"] if "country" in data else None,
+        }
+        data = {
+            "user": user_data,
+            "id_card": data["id_card"] if "id_card" in data else None,
+        }
+        serializer = OwnerSerializer(data=data, partial=True)
+        if serializer.is_valid():
+            # serializer.save
+            data = serializer.data
+            if User.objects.filter(username=data["user"]["username"]).exists():
+                return Response({"status": "error", "message": "Username already exists"})
+            elif User.objects.filter(email=data["user"]["email"]).exists():
+                return Response({"status": "error", "message": "Email already exists"})
+            elif User.objects.filter(phone=data["user"]["phone"]).exists():
+                return Response({"status": "error", "message": "Phone already exists"})
+            else:
+                # user = User.objects.create_user(**data)
 
-            user = User.objects.create_user(**user_data)
-            user.profil_picture = profile
-            user.set_password(user_data["password"])
-            owner = Owner(
-                user=user, id_card=data["id_card"] if "id_card" in data else None
-            )
-            owner.id_card = id_card
-            owner.save()
-            owner_group = Group.objects.get_or_create(name="Owner")[0]
-            user.groups.add(owner_group)
-            # owner_data = {
-            #     "id": owner.id,
-            #     "user": user.id,
-            #     "id_card": owner.id_card.url if owner.id_card else None,
-            #     "username": user.username,
-            #     "email": user.email,
-            #     "first_name": user.first_name,
-            #     "last_name": user.last_name,
-            #     "phone": user.phone,
-            #     "profil_picture": (
-            #         user.profil_picture.url if user.profil_picture else None
-            #     ),
-            #     "address": user.address,
-            #     "city": user.city,
-            #     "country": user.country,
-            # }
-            owner_data = OwnerSerializer(owner).data
+                user = User.objects.create_user(**user_data)
+                user.profil_picture = profile
+                user.set_password(user_data["password"])
+                owner = Owner(
+                    user=user, id_card=data["id_card"] if "id_card" in data else None
+                )
+                owner.id_card = id_card
+                # owner.user.role_set.add(Role.objects.get_or_create(name="OWNER")[0])
+                owner.save()
+                owner_group = Group.objects.get_or_create(name="Owner")[0]
+                user.groups.add(owner_group)
+                # owner_data = {
+                #     "id": owner.id,
+                #     "user": user.id,
+                #     "id_card": owner.id_card.url if owner.id_card else None,
+                #     "username": user.username,
+                #     "email": user.email,
+                #     "first_name": user.first_name,
+                #     "last_name": user.last_name,
+                #     "phone": user.phone,
+                #     "profil_picture": (
+                #         user.profil_picture.url if user.profil_picture else None
+                #     ),
+                #     "address": user.address,
+                #     "city": user.city,
+                #     "country": user.country,
+                # }
+                owner_data = OwnerSerializer(owner).data
+                return Response(
+                    {
+                        "status": "success",
+                        "message": "Owner created successfully",
+                        "owner": owner_data,
+                    }
+                )
+        else:
             return Response(
                 {
-                    "status": "success",
-                    "message": "Owner created successfully",
-                    "owner": owner_data,
+                    "status": "error",
+                    "message": "Something went wrong",
+                    "errors": serializer.errors,
                 }
             )
-    else:
+    except Exception as e:
         return Response(
-            {
-                "status": "error",
-                "message": "Something went wrong",
-                "errors": serializer.errors,
-            }
+            {"status": "errors", "message": "Something went wrong", "error": str(e)}
         )
 
 
 @api_view(["POST"])
 def register_owner_partial(request):
-    data = request.data
-    user_id = data["customer_id"]
-    id_card = data["id_card"]
-    user = User.objects.get(id=user_id)
-    owner = Owner(user=user, id_card=id_card)
-    owner.id_card = id_card
-    owner.save()
-    owner_group = Group.objects.get_or_create(name="Owner")[0]
-    user.groups.add(owner_group)
-    owner_data = OwnerSerializer(owner).data
-    return Response(
-        {
-            "status": "success",
-            "message": "Owner created successfully",
-            "owner": owner_data,
-        }
-    )
+    try :
+        data = request.data
+        user_id = data["customer_id"]
+        id_card = data["id_card"]
+        user = User.objects.get(id=user_id)
+        owner = Owner(user=user, id_card=id_card)
+        owner.id_card = id_card
+        # owner.user.role_set.add(Role.objects.get_or_create(name="OWNER")[0])
+        owner.save()
+        owner_group = Group.objects.get_or_create(name="Owner")[0]
+        user.groups.add(owner_group)
+        owner_data = OwnerSerializer(owner).data
+        return Response(
+            {
+                "status": "success",
+                "message": "Owner created successfully",
+                "owner": owner_data,
+            }
+        )
+    except Exception as e:
+        return Response(
+            {"status": "errors", "message": "Something went wrong", "error": str(e)}
+        )
 
 
 def get_tokens_for_user(user):

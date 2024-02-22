@@ -138,7 +138,7 @@ DATABASES = {
     'default': dj_database_url.config(
         # Replace this value with your local database's connection string.
         default=f'postgresql://{env("DB_USER")}:{env("DB_PASSWORD")}@{env("DB_HOST")}:{env("DB_PORT")}/{env("DB_NAME")}',
-        # default='postgres://rental_db:veSCORDpybgVjO5Y1dtcAzGHq1WKpJFU@dpg-cn7u8uf79t8c73e7gvh0-a.oregon-postgres.render.com/rental_db',
+        # default='postgres://rental_user:YUEr2Gdl6s8RqsLYM6p1RwJ7TUtsVa3q@dpg-cn9sf37sc6pc73fe596g-a.oregon-postgres.render.com/rental_db_vicz',
         conn_max_age=600
     )
     # 'default': {

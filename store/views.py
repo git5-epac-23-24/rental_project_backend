@@ -59,10 +59,24 @@ class RentedViewSet(viewsets.ModelViewSet):
                         "status": "error",
                         "message": "This intervalle of date is not available",
                     })
+                qte = 1
+                if data['quantity']:
+                    if data['product'].stock < data['quantity']:
+                        return Response({
+                            "status": "error",
+                            "message": "the quantity available is not sufficient",
+                        })
+                    else:
+                        qte = data['quantity']
+                        
                 rent = Rent(**data)
                 rent.duration = start_date_n - end_date_n
                 rent.user = request.user
+                rent.quantity = qte
                 rent.save()
+                product = rent.product
+                product.stock = product.stock - rent.quantity
+                product.save()
                 owner = rent.product.owner
                 subject = "Demande de location"
                 message = f"Chers {owner.user.username}, cet email vous a été envoyé en raison d'une récente demande de location de votre produit : {rent.product.name}.\nEn effet un client nommé {rent.user.username} a effectué une réservation de votre produit.\n Connectez-vous à votre compte pour plus d'information."

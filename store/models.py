@@ -60,6 +60,7 @@ class Rent(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     duration = models.DurationField()
+    quantity = models.IntegerField(default=1)
     cost = models.FloatField()
     status = models.BooleanField(default= False)
     created_at = models.DateTimeField(auto_now_add=True)
