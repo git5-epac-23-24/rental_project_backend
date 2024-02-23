@@ -17,9 +17,23 @@ class RentAdmin(admin.ModelAdmin):
         }),
     )
     
+class ProductAdmin(admin.ModelAdmin):
+    list_display=('owner', 'name', 'description', 'price', 'stock', 'type', 'created_at', 'updated_at')
+    list_filter = ('type', 'created_at', 'updated_at')
+    search_fields = ("name", "description")
+    ordering = ("name", "created_at")
 
+    fieldsets = (
+        (None, {
+            'fields': ('owner', 'name', 'description', 'price', 'stock')
+        }),
+        ('Availability', {
+            'fields': ('type', 'extra_spec', 'picture')
+        }),
+    )
+    
 # Register your models here.
 
 admin.site.register(ProductType)
-admin.site.register(Product)
+admin.site.register(Product, ProductAdmin)
 admin.site.register(Rent, RentAdmin)
