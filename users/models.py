@@ -32,6 +32,7 @@ class User(AbstractUser):
     # password 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    id_card = models.ImageField(upload_to="users/owners/id_card/%Y/%m/%d/", blank=True, null=True)
 
     # REQUIRED_FIELDS = ['groups_id']
 
@@ -39,15 +40,15 @@ class User(AbstractUser):
         return self.username
 
 
-class Owner(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="owner")
-    id_card = models.ImageField(upload_to="users/owners/id_card/%Y/%m/%d/", blank=True)
+# class Owner(models.Model):
+#     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="owner")
+#     id_card = models.ImageField(upload_to="users/owners/id_card/%Y/%m/%d/", blank=True)
 
-    class Meta:
-        db_table = "owners"
+#     class Meta:
+#         db_table = "owners"
 
-    def __str__(self):
-        return self.user.username
+#     def __str__(self):
+#         return self.user.username
 
 
 class Role(models.Model):

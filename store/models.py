@@ -1,5 +1,5 @@
 from django.db import models
-from users.models import User, Owner
+from users.models import User
 
 
 
@@ -23,7 +23,7 @@ class ProductType(models.Model):
 
 
 class Product(models.Model):
-    owner = models.ForeignKey(Owner, on_delete=models.CASCADE, related_name="products")
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="products")
     name = models.CharField(max_length=50, blank=True, null=True)
     # location = models.CharField(max_length=500)
     description = models.TextField()
