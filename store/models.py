@@ -41,7 +41,7 @@ class Product(models.Model):
         ProductType, on_delete=models.CASCADE, related_name="products"
     )
     extra_spec = models.JSONField(blank=True, null=True)
-    picture = models.ImageField(upload_to="products/pictures/%Y/%m/%d/", blank=True)
+    picture = models.ImageField(upload_to="products/pictures/%Y/%m/%d/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -1,15 +1,8 @@
 from django.shortcuts import render
 from rest_framework import viewsets, permissions
-from store.serializers import (
-    RentedSerializers,
-    CreateRentedSerializers,
-    updateRentedSerializers,
-    getRentedSerialisers,
-    ProductSerializers,
-    ProductTypeSerializers,
-)
+from store.serializers import *
 from store.models import Rent, Product, ProductType
-from users.models import User
+from users.models import User, Owner
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from datetime import datetime
@@ -34,7 +27,7 @@ class RentedViewSet(viewsets.ModelViewSet):
         """
         Instantiates and returns the list of permissions that this view requires.
         """
-        if self.action == 'create':
+        if self.action == 'create' or self.action == 'list' or self.action == 'list_by_product':
             permission_classes = [permissions.IsAuthenticated]
         else:
             permission_classes = [permissions.IsAdminUser]
@@ -169,45 +162,55 @@ class RentedViewSet(viewsets.ModelViewSet):
 class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializers
 
-    # def get_permissions(self):
-    #     """
-    #     Instantiates and returns the list of permissions that this view requires.
-    #     """
-    #     if self.action == 'create':
-    #         permission_classes = [permissions.IsAuthenticated]
-    #     else:
-    #         permission_classes = [permissions.IsAdminUser]
-    #     return [permission() for permission in permission_classes]
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action == 'create' or self.action =='update' or self.action =='destroy' :
+            permission_classes = [permissions.IsAuthenticated]
+        else:
+            permission_classes = []
+        return [permission() for permission in permission_classes]
 
     def get_queryset(self):
         return Product.objects.all().order_by("-created_at")
 
     def create(self, request):
-        try:
-            data = request.data
-            # data["owner"] = request.user
-            serializer = ProductSerializers(data=data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(
-                    {
-                        "status": "success",
-                        "message": "Your product has been added successfully",
-                        "data": serializer.data,
-                    }
-                )
-            else:
-                return Response(
-                    {
-                        "status": "error",
-                        "message": "Serialization fails",
-                        "error": serializer.errors,
-                    }
-                )
-        except Exception as e:
+        # try:
+        data = request.data
+        data['owner'] = request.user.owner
+        
+        # data["owner"] = request.user
+        print(data)
+        serializer = ProductSerializers(data=data, partial=True)
+        
+        if serializer.is_valid():
+            product = serializer.save()
+            serialized = ProductSerializers(product)
+            
+            # data = serializer.save()
+            # product = Product(**data_sec)
+            # print(product.picture)
+            
             return Response(
-                {"status": "errors", "message": "Something went wrong", "error": str(e)}
+                {
+                    "status": "success",
+                    "message": "Your product has been added successfully",
+                    "data": serialized.data
+                }
             )
+        else:
+            return Response(
+                {
+                    "status": "error",
+                    "message": "Serialization fails",
+                    "error": serializer.errors,
+                }
+            )
+        # except Exception as e:
+        #     return Response(
+        #         {"status": "errors", "message": "Something went wrong", "error": str(e)}
+        #     )
 
     def update(self, request, *args, **kwargs):
         try:
