@@ -1,23 +1,77 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+
 # from django.contrib.auth.models import User
-from .models import Owner, User
+from .models import User
+
 # Register your models here.
 
 
-class UserInline(admin.StackedInline):
-    model = User
-    can_delete = False
-    verbose_name_plural = "users"
-    
-    
-class OwnerInline(admin.StackedInline):
-    model = Owner
-    can_delete = False
-    verbose_name_plural = "owners"
+# class UserInline(admin.StackedInline):
+#     model = User
+#     can_delete = False
+#     verbose_name_plural = "users"
+
+
 class UserAdmin(BaseUserAdmin):
-    inlines = [OwnerInline]
-    
-    
-# admin.site.unregister(User)
+    list_display = ("username", "email", "first_name", "last_name", "phone", "is_staff")
+    list_select_related = ("user",)
+    search_fields = ("username", "email", "first_name", "last_name", "phone")
+    ordering = ("username",)
+    filter_horizontal = ()
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "username",
+                    "email",
+                    "password",
+                    "first_name",
+                    "last_name",
+                    "phone",
+                    "profil_picture",
+                    "address",
+                    "city",
+                    "country",
+                    "id_card",
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                )
+            },
+        ),
+    )
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "username",
+                    "email",
+                    "password1",
+                    "password2",
+                    "first_name",
+                    "last_name",
+                    "phone",
+                    "profil_picture",
+                    "address",
+                    "city",
+                    "country",
+                    "id_card",
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                ),
+            },
+        ),
+    )
+    filter_horizontal = ()
+
+
 admin.site.register(User, UserAdmin)
