@@ -24,6 +24,7 @@ class ProductType(models.Model):
 
 class Product(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="products")
+    # owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="products", blank=True, null=True)
     name = models.CharField(max_length=50, blank=True, null=True)
     # location = models.CharField(max_length=500)
     description = models.TextField()

@@ -29,6 +29,7 @@ from django.core.mail import send_mail
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class UserTestViewSet(viewsets.ModelViewSet):
@@ -406,8 +407,18 @@ def login_user(request):
 
 @api_view(["POST"])
 def logout_user(request):
-    token = RefreshToken(request.data["token"])
-    token.blacklist()
+    try:
+        token = RefreshToken(request.data["token"])
+        token.blacklist()
+        return Response({'message': 'User logged out successfully.'})
+    except Exception as e:
+        return Response(
+            {
+                "status": "error",
+                "message": "Something went wrong",
+                "errors": str(e),
+            }
+        )
 
 
 @api_view(["POST"])

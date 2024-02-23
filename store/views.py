@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import viewsets, permissions
 from store.serializers import *
 from store.models import Rent, Product, ProductType
-from users.models import User, Owner
+from users.models import User
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from datetime import datetime
@@ -72,14 +72,14 @@ class RentedViewSet(viewsets.ModelViewSet):
                 product.save()
                 owner = rent.product.owner
                 subject = "Demande de location"
-                message = f"Chers {owner.user.username}, cet email vous a été envoyé en raison d'une récente demande de location de votre produit : {rent.product.name}.\nEn effet un client nommé {rent.user.username} a effectué une réservation de votre produit.\n Connectez-vous à votre compte pour plus d'information."
+                message = f"Chers {owner.username}, cet email vous a été envoyé en raison d'une récente demande de location de votre produit : {rent.product.name}.\nEn effet un client nommé {rent.user.username} a effectué une réservation de votre produit.\n Connectez-vous à votre compte pour plus d'information."
                 emailFrom = settings.EMAIL_HOST_USER
-                recipient = [owner.user.email,]
+                recipient = [owner.email,]
                 send_mail(subject=subject, message=message, from_email=emailFrom, recipient_list=recipient)
                 return Response({
                     "status": "success",
                     "message": "Your reservation has been added successfully",
-                    "data": model_to_dict(rent)
+                    "data": model_to_dict(rent) 
                 })
             else:
                 return Response({
@@ -178,11 +178,12 @@ class ProductViewSet(viewsets.ModelViewSet):
     def create(self, request):
         # try:
         data = request.data
-        data['owner'] = request.user.owner
-        
-        # data["owner"] = request.user
-        print(data)
-        serializer = ProductSerializers(data=data, partial=True)
+        # data['owner'] = request.user
+        data_copy = data.copy()
+        # user = request.user
+        data_copy["owner"] = request.user.id
+        # print(data)
+        serializer = ProductSerializers(data=data_copy, partial=True)
         
         if serializer.is_valid():
             product = serializer.save()

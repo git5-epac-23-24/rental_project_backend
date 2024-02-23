@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Rent, Product, ProductType
-from users.models import Owner
-from users.serializers import UserSerializer, UserRetrieveSerializer, OwnerGetSerializer
+# from users.models import Owner
+from users.serializers import UserSerializer, UserRetrieveSerializer
 
 class RentedSerializers(serializers.ModelSerializer):
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
