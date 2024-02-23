@@ -180,8 +180,17 @@ class ProductViewSet(viewsets.ModelViewSet):
         data = request.data
         # data['owner'] = request.user
         data_copy = data.copy()
+        product_type = ProductType.objects.get(pk=data['type'])
+        # data_copy['type'] = product_type
+        # The code is removing the 'type' key from the dictionary `data_copy` and assigning its value
+        # to the variable `type`.
+        # type = data_copy.pop('type')
+       
         # user = request.user
         data_copy["owner"] = request.user.id
+        # product = Product.objects.create(**data_copy)
+        # product.owner = request.user
+        # product.save()
         # print(data)
         serializer = ProductSerializers(data=data_copy, partial=True)
         
