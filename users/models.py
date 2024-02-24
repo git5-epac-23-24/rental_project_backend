@@ -33,6 +33,11 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     id_card = models.ImageField(upload_to="users/owners/id_card/%Y/%m/%d/", blank=True, null=True)
+    
+    def display_groups(self):
+        return ', '.join(group.name for  group in self.groups.all()[:3])
+    
+    display_groups.short_description = "Groupe"
 
     # REQUIRED_FIELDS = ['groups_id']
 
