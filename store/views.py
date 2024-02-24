@@ -27,10 +27,11 @@ class RentedViewSet(viewsets.ModelViewSet):
         """
         Instantiates and returns the list of permissions that this view requires.
         """
-        if self.action == 'create' or self.action == 'list' or self.action == 'list_by_product':
-            permission_classes = [permissions.IsAuthenticated]
-        else:
-            permission_classes = [permissions.IsAdminUser]
+        permission_classes = [permissions.IsAuthenticated]
+        # if self.action == 'create' or self.action == 'list' or self.action == 'list_by_product':
+        #     permission_classes = [permissions.IsAuthenticated]
+        # else:
+        #     permission_classes = [permissions.IsAdminUser]
         return [permission() for permission in permission_classes]
  
     def get_queryset(self):
