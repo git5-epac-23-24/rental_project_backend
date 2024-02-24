@@ -14,7 +14,11 @@ from .models import User, Role, Subscribers, Email
 
 
 class UserAdmin(BaseUserAdmin):
-    list_display = ("username", "email", "first_name", "last_name", "phone", "is_staff")
+    
+    def display_groups(self):
+        return ', '.join(group.name for  group in self.groups.all()[:3])
+    
+    list_display = ("username", "email", "first_name", "last_name", "phone", "is_staff", "is_superuser", "display_groups")
     search_fields = ("username", "email", "first_name", "last_name", "phone")
     ordering = ("username",)
     filter_horizontal = ()
