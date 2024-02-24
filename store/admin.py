@@ -24,11 +24,20 @@ class ProductTypeAdmin(admin.ModelAdmin):
     ordering = ("name",)
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display=('name', 'description', 'price', 'stock', 'type', 'owner')
-    list_filter = ('name', 'price', 'type', 'owner')
-    search_fields = ("name", "price")
-    ordering = ("name", "price", "stock")
+    list_display=('name', 'description', 'price', 'stock', 'type', 'owner', 'created_at', 'updated_at')
+    list_filter = ('name', 'price', 'type', 'owner', 'created_at', 'updated_at')
+    search_fields = ("name", "description")
+    ordering = ("name", "created_at", "price", "stock")
 
+    # fieldsets = (
+    #     (None, {
+    #         'fields': ('owner', 'name', 'description', 'price', 'stock')
+    #     }),
+    #     ('Availability', {
+    #         'fields': ('type', 'extra_spec', 'picture')
+    #     }),
+    # )
+    
 # Register your models here.
 
 admin.site.register(ProductType, ProductTypeAdmin)

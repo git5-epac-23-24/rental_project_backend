@@ -15,7 +15,10 @@ from .models import User, Role, Subscribers, Email
 
 class UserAdmin(BaseUserAdmin):
     list_display = ("username", "email", "first_name", "last_name", "phone", "is_staff")
+<<<<<<< HEAD
     
+=======
+>>>>>>> af0e439fb327d2d4840f711432a29dfa279953d9
     search_fields = ("username", "email", "first_name", "last_name", "phone")
     ordering = ("username",)
     filter_horizontal = ()
