@@ -166,7 +166,7 @@ class SubscriberViewSet(viewsets.ModelViewSet):
             serializer = SubscriberSerializer(data=request.data)
             if (serializer.is_valid()):
                 subscriber = Subscribers.objects.create(email= serializer.data['email'])
-                subject = "Abonnement à newsletter de Rental_app"
+                subject = "Abonnement à la newsletter de Rental_app"
                 message = f"Votre abbonnement à la newsletter de Rental app a été enregistré avec succès.\nVous serez informés de toutes les actualités."
                 emailFrom = settings.EMAIL_HOST_USER
                 recipient = [serializer.data['email'],]
