@@ -47,12 +47,13 @@ class RentedViewSet(viewsets.ModelViewSet):
                 formatDate = "%Y-%m-%dT%H:%M:%SZ"
                 start_date_n = datetime.strptime(data['end_date'], formatDate)
                 end_date_n = datetime.strptime(data['start_date'], formatDate)
-                isNotAvailable = data['product'].rents.filter(Q(start_date__range=(start_date_n, end_date_n))|Q(end_date__range=(start_date_n, end_date_n))|(Q(start_date__lt= start_date_n)&Q(end_date__gt =end_date_n))).exists()
-                if (isNotAvailable):
-                    return Response({
-                        "status": "error",
-                        "message": "This intervalle of date is not available",
-                    })
+                if (data['product'].stock < 1):
+                    isNotAvailable = data['product'].rents.filter(Q(start_date__range=(start_date_n, end_date_n))|Q(end_date__range=(start_date_n, end_date_n))|(Q(start_date__lt= start_date_n)&Q(end_date__gt =end_date_n))).exists()
+                    if (isNotAvailable):
+                        return Response({
+                            "status": "error",
+                            "message": "This intervalle of date is not available",
+                        })
                 qte = 1
                 if data['quantity']:
                     if data['product'].stock < data['quantity']:
