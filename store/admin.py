@@ -10,7 +10,7 @@ class RentAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {
-            'fields': ('user', 'duration', 'cost')
+            'fields': ('user', 'duration', 'cost', 'quantity')
         }),
         ('Availability', {
             'fields': ('product', 'status', 'start_date', 'end_date')
