@@ -95,7 +95,7 @@ class RentedViewSet(viewsets.ModelViewSet):
                     "error": str(e)
                 })
             
-    def partial_update(self, request, *args, **kwargs):
+    def update_status(self, request, *args, **kwargs):
         try:
             data = request.data
             serializer = updateRentedSerializers(data=data)

@@ -18,5 +18,5 @@ urlpatterns = [
     path("product_types/<int:pk>/", views.ProductTypeViewSet.as_view({"get": "retrieve", "post": "update", "delete": "destroy"})),
     path("products/filter/", views.ProductViewSet.as_view({"post": "filter"})),
     path("<int:pk>/rented/", views.RentedViewSet.as_view({'get': 'list_by_product'})),
-    path("rented/<int:pk>/update/status/", views.RentedViewSet.as_view({'patch': 'partial_update'}))
+    path("rented/<int:pk>/update/status/", views.RentedViewSet.as_view({'put': 'update_status'}))
 ]
