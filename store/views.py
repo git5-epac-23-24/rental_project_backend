@@ -10,6 +10,7 @@ from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.conf import settings
 from django.core.mail import send_mail
+import datetime
 
 class RentedViewSet(viewsets.ModelViewSet):
     serializer_class = RentedSerializers
@@ -292,6 +293,40 @@ class ProductViewSet(viewsets.ModelViewSet):
                     "status": "success",
                     "message": "Products retrieved successfully",
                     "data": serializer.data,
+                }
+            )
+        except Exception as e:
+            return Response(
+                {"status": "errors", "message": "Something went wrong", "error": str(e)}
+            )
+            
+    def list_availability(self, request, *args, **kwargs):
+        try:
+            rents = Rent.objects.filter(
+                Q(product__pk = kwargs["pk"])
+                & Q(start_date__gte=datetime.datetime.now())
+                )
+            if not rents :
+                return Response(
+                    {
+                        "status": "success",
+                        "message": "The product is available for any date",
+                        "data": [],
+                    }
+                )
+            datesrow = []
+            for rent in rents:
+                datesrow.append(
+                    {
+                        'start_date': rent.start_date,
+                        'end_date': rent.end_date
+                    }
+                )
+            return Response(
+                {
+                    "status": "success",
+                    "message": "The product is not available for the date below",
+                    "data": datesrow,
                 }
             )
         except Exception as e:
