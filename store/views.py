@@ -38,6 +38,44 @@ class RentedViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Rent.objects.all().order_by('-start_date')
     
+    def update_status(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            serializer = updateRentedSerializers(data=data)
+            if (not serializer.is_valid()):
+                return Response({
+                    "status": "error",
+                    "message": "Something went wrong",
+                    "error": serializer.errors
+                })
+            rent = get_object_or_404(Rent, pk=kwargs['pk'])
+            rent.status = serializer.data['status']
+            rent.save()
+            subject = "Confirmation de location"
+            user = rent.user
+            message = f"Chers {user.username}, cet email vous a été envoyé pour vous informer que votre demande de location du produit {rent.product.name} a été validé par le propritaire.\n Connectez-vous à votre compte pour plus d'informations."
+            emailFrom = settings.EMAIL_HOST_USER
+            recipient = [
+                user.email,
+            ]
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=emailFrom,
+                recipient_list=recipient,
+            )
+            return Response(
+                {
+                    "status": "success",
+                    "message": "Status updated successfully for the reservation",
+                    "data": model_to_dict(rent),
+                }
+            )
+        except Exception as e:
+            return Response(
+                {"status": "error", "message": "Something went wrong", "error": str(e)}
+            )
+    
     def create(self, request):
         try:
             data = request.data
@@ -97,43 +135,7 @@ class RentedViewSet(viewsets.ModelViewSet):
                     "error": str(e)
                 })
             
-    def update_status(self, request, *args, **kwargs):
-        try:
-            data = request.data
-            serializer = updateRentedSerializers(data=data)
-            if (not serializer.is_valid()):
-                return Response({
-                    "status": "error",
-                    "message": "Something went wrong",
-                    "error": serializer.errors
-                })
-            rent = get_object_or_404(Rent, pk=kwargs['pk'])
-            rent.status = serializer.data['status']
-            rent.save()
-            subject = "Confirmation de location"
-            user = rent.user
-            message = f"Chers {user.username}, cet email vous a été envoyé pour vous informer que votre demande de location du produit {rent.product.name} a été validé par le propritaire.\n Connectez-vous à votre compte pour plus d'informations."
-            emailFrom = settings.EMAIL_HOST_USER
-            recipient = [
-                user.email,
-            ]
-            send_mail(
-                subject=subject,
-                message=message,
-                from_email=emailFrom,
-                recipient_list=recipient,
-            )
-            return Response(
-                {
-                    "status": "success",
-                    "message": "Status updated successfully for the reservation",
-                    "data": model_to_dict(rent),
-                }
-            )
-        except Exception as e:
-            return Response(
-                {"status": "error", "message": "Something went wrong", "error": str(e)}
-            )
+    
 
     def list_by_product(self, request, *args, **kwargs):
         try:
@@ -184,26 +186,15 @@ class ProductViewSet(viewsets.ModelViewSet):
         # data['owner'] = request.user
         data_copy = data.copy()
         product_type = ProductType.objects.get(pk=data['type'])
-        # data_copy['type'] = product_type
-        # The code is removing the 'type' key from the dictionary `data_copy` and assigning its value
-        # to the variable `type`.
-        # type = data_copy.pop('type')
        
         # user = request.user
         data_copy["owner"] = request.user.id
-        # product = Product.objects.create(**data_copy)
-        # product.owner = request.user
-        # product.save()
-        # print(data)
         serializer = ProductSerializers(data=data_copy, partial=True)
         
         if serializer.is_valid():
             product = serializer.save()
             serialized = ProductSerializers(product)
             
-            # data = serializer.save()
-            # product = Product(**data_sec)
-            # print(product.picture)
             
             return Response(
                 {
@@ -224,6 +215,21 @@ class ProductViewSet(viewsets.ModelViewSet):
         #     return Response(
         #         {"status": "errors", "message": "Something went wrong", "error": str(e)}
         #     )
+        
+    def destroy(self, request, *args, **kwargs):
+        try:
+            product = get_object_or_404(Product, pk=kwargs["pk"])
+            product.delete()
+            return Response(
+                {
+                    "status": "success",
+                    "message": "Your product has been deleted successfully",
+                }
+            )
+        except Exception as e:
+            return Response(
+                {"status": "errors", "message": "Something went wrong", "error": str(e)}
+            )
 
     def update(self, request, *args, **kwargs):
         try:
@@ -252,20 +258,7 @@ class ProductViewSet(viewsets.ModelViewSet):
                 {"status": "errors", "message": "Something went wrong", "error": str(e)}
             )
 
-    def destroy(self, request, *args, **kwargs):
-        try:
-            product = get_object_or_404(Product, pk=kwargs["pk"])
-            product.delete()
-            return Response(
-                {
-                    "status": "success",
-                    "message": "Your product has been deleted successfully",
-                }
-            )
-        except Exception as e:
-            return Response(
-                {"status": "errors", "message": "Something went wrong", "error": str(e)}
-            )
+    
 
     def list(self, request):
         try:
@@ -383,15 +376,6 @@ class ProductViewSet(viewsets.ModelViewSet):
 class ProductTypeViewSet(viewsets.ModelViewSet):
     serializer_class = ProductTypeSerializers
 
-    # def get_permissions(self):
-    #     """
-    #     Instantiates and returns the list of permissions that this view requires.
-    #     """
-    #     if self.action == "create":
-    #         permission_classes = [permissions.IsAuthenticated]
-    #     else:
-    #         permission_classes = [permissions.IsAdminUser]
-    #     return [permission() for permission in permission_classes]
 
     def get_queryset(self):
         return ProductType.objects.all().order_by("-created_at")

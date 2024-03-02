@@ -17,11 +17,7 @@ class RentAdmin(admin.ModelAdmin):
         }),
     )
     
-class ProductTypeAdmin(admin.ModelAdmin):
-    list_display=('name', 'description')
-    list_filter = ('name',)
-    search_fields = ("name", "description")
-    ordering = ("name",)
+
 
 class ProductAdmin(admin.ModelAdmin):
     list_display=('name', 'description', 'price', 'stock', 'type', 'owner', 'created_at', 'updated_at')
@@ -37,6 +33,14 @@ class ProductAdmin(admin.ModelAdmin):
     #         'fields': ('type', 'extra_spec', 'picture')
     #     }),
     # )
+    
+    
+class ProductTypeAdmin(admin.ModelAdmin):
+    list_display=('name', 'description')
+    list_filter = ('name',)
+    search_fields = ("name", "description")
+    ordering = ("name",)
+    
     
 # Register your models here.
 

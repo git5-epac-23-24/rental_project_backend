@@ -1,7 +1,7 @@
-from rest_framework import serializers
-from .models import Rent, Product, ProductType
 from users.models import User
 from users.serializers import UserSerializer, UserRetrieveSerializer
+from rest_framework import serializers
+from .models import Rent, Product, ProductType
 
 class RentedSerializers(serializers.ModelSerializer):
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
@@ -12,6 +12,14 @@ class RentedSerializers(serializers.ModelSerializer):
         
     def create(self, validated_data):
         return Rent(**validated_data)
+    
+    
+class updateRentedSerializers(serializers.Serializer):
+    status = serializers.BooleanField(required=True)
+    
+    class Meta:
+        model = Rent
+        fields = ["status"]
     
 class CreateRentedSerializers(serializers.ModelSerializer):
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
@@ -29,15 +37,20 @@ class CreateRentedSerializers(serializers.ModelSerializer):
     def create(self, validated_data):
         return Rent(**validated_data)
     
-class updateRentedSerializers(serializers.Serializer):
-    status = serializers.BooleanField(required=True)
-    
-    class Meta:
-        model = Rent
-        fields = ["status"]
+
         
 
     
+    
+    
+class ProductTypeSerializers(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    class Meta:
+        model= ProductType
+        fields = '__all__'
+        depth = 1
+    
+         
 class ProductSerializers(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     picture = serializers.ImageField(required=True, allow_null=False)
@@ -55,16 +68,6 @@ class ProductSerializers(serializers.ModelSerializer):
         print(validated_data)
         product = Product.objects.create(**validated_data)
         return product
-    
-    
-class ProductTypeSerializers(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-    class Meta:
-        model= ProductType
-        fields = '__all__'
-        depth = 1
-    
-         
 class getRentedSerialisers(serializers.ModelSerializer):
     user = UserRetrieveSerializer(many=False, read_only=True)
     product = ProductSerializers(many=False, read_only=True)
