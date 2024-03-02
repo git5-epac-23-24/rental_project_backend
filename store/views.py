@@ -433,20 +433,7 @@ class ProductTypeViewSet(viewsets.ModelViewSet):
                 {"status": "errors", "message": "Something went wrong", "error": str(e)}
             )
 
-    def destroy(self, request, *args, **kwargs):
-        try:
-            productType = get_object_or_404(ProductType, pk=kwargs["pk"])
-            productType.delete()
-            return Response(
-                {
-                    "status": "success",
-                    "message": "Your product type has been deleted successfully",
-                }
-            )
-        except Exception as e:
-            return Response(
-                {"status": "errors", "message": "Something went wrong", "error": str(e)}
-            )
+    
 
     def list(self, request):
         try:
@@ -457,6 +444,22 @@ class ProductTypeViewSet(viewsets.ModelViewSet):
                     "status": "success",
                     "message": "Product types retrieved successfully",
                     "data": serializer.data,
+                }
+            )
+        except Exception as e:
+            return Response(
+                {"status": "errors", "message": "Something went wrong", "error": str(e)}
+            )
+    
+    
+    def destroy(self, request, *args, **kwargs):
+        try:
+            productType = get_object_or_404(ProductType, pk=kwargs["pk"])
+            productType.delete()
+            return Response(
+                {
+                    "status": "success",
+                    "message": "Your product type has been deleted successfully",
                 }
             )
         except Exception as e:
