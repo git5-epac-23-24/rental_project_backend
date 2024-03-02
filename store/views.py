@@ -5,7 +5,7 @@ from store.models import Rent, Product, ProductType
 from users.models import User
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from datetime import datetime
+# from datetime import datetime
 from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.conf import settings
@@ -46,8 +46,8 @@ class RentedViewSet(viewsets.ModelViewSet):
                 data = serializer.data
                 data['product'] = Product.objects.get(pk=data['product'])
                 formatDate = "%Y-%m-%dT%H:%M:%SZ"
-                start_date_n = datetime.strptime(data['end_date'], formatDate)
-                end_date_n = datetime.strptime(data['start_date'], formatDate)
+                start_date_n = datetime.datetime.strptime(data['end_date'], formatDate)
+                end_date_n = datetime.datetime.strptime(data['start_date'], formatDate)
                 if (data['product'].stock < 1):
                     isNotAvailable = data['product'].rents.filter(Q(start_date__range=(start_date_n, end_date_n))|Q(end_date__range=(start_date_n, end_date_n))|(Q(start_date__lt= start_date_n)&Q(end_date__gt =end_date_n))).exists()
                     if (isNotAvailable):
